@@ -1,0 +1,65 @@
+{
+  "hs": {
+    "version": "v20261114",
+    "seasonal": true,
+    "train_years": "2012-2019",
+    "test_years": "2020-2022",
+    "region_month": {
+      "r2": 0.935,
+      "wape": 21.5,
+      "mape": 62.8,
+      "bias_pct": -0.3,
+      "n": 869
+    },
+    "national_month": {
+      "r2": 0.941,
+      "wape": 12.4,
+      "mape": 12.6,
+      "bias_pct": -0.3,
+      "n": 36
+    },
+    "range_coverage_pct": 78.1
+  },
+  "frp": {
+    "version": "v20261114",
+    "seasonal": true,
+    "train_years": "2012-2019",
+    "test_years": "2020-2022",
+    "region_month": {
+      "r2": 0.91,
+      "wape": 31.2,
+      "mape": 214.5,
+      "bias_pct": 1.9,
+      "n": 869
+    },
+    "national_month": {
+      "r2": 0.931,
+      "wape": 15.2,
+      "mape": 26.1,
+      "bias_pct": 1.9,
+      "n": 36
+    },
+    "range_coverage_pct": 78.8
+  },
+  "hs_without_season": {
+    "version": "v20261114",
+    "seasonal": false,
+    "train_years": "2012-2019",
+    "test_years": "2020-2022",
+    "region_month": {
+      "r2": 0.926,
+      "wape": 22.1,
+      "mape": 66.5,
+      "bias_pct": 0.9,
+      "n": 869
+    },
+    "national_month": {
+      "r2": 0.941,
+      "wape": 12.5,
+      "mape": 14.0,
+      "bias_pct": 0.9,
+      "n": 36
+    },
+    "range_coverage_pct": 80.1
+  }
+}

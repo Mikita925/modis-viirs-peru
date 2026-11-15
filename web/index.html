@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendario de quemas · Perú</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<style>
+  :root { --bg:#f7f7f5; --panel:#fff; --ink:#1d1d1b; --muted:#6b6b66; --line:#e2e2dc; --accent:#0b6e99; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { margin:0; font-size:18px; }
+  header p { margin:2px 0 0; color:var(--muted); font-size:13px; }
+  .layout { display:grid; grid-template-columns: 300px 1fr; gap:16px; padding:16px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  aside .panel + .panel { margin-top:12px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+  select, input, button { font:inherit; width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:7px; background:#fff; }
+  button { cursor:pointer; background:var(--accent); color:#fff; border:none; margin-top:10px; }
+  button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  .row { display:flex; gap:8px; } .row > * { flex:1; min-width:0; }
+  h2 { font-size:14px; margin:0 0 6px; }
+  .kpi { font-size:22px; font-weight:650; }
+  .kpi small { font-size:12px; font-weight:400; color:var(--muted); }
+  .status-alto { color:#b35806; } .status-bajo { color:#2166ac; } .status-normal { color:var(--muted); }
+  #map { height:420px; border-radius:10px; border:1px solid var(--line); }
+  #calendar { overflow-x:auto; }
+  .legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); flex-wrap:wrap; }
+  .legend i { width:22px; height:12px; display:inline-block; border-radius:2px; }
+  .toggle { display:flex; gap:6px; } .toggle button { margin:0; padding:5px 8px; width:auto; }
+  .toggle button.on { background:var(--accent); color:#fff; } .toggle button:not(.on) { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  #tip { position:fixed; pointer-events:none; background:#1d1d1b; color:#fff; padding:6px 8px; border-radius:6px; font-size:12px; display:none; z-index:2000; max-width:260px; }
+  .note { font-size:12px; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Calendario de actividad de quema · Perú</h1>
+  <p>Hotspots MODIS y VIIRS armonizados en una sola serie (escala VIIRS 375 m) · datos NASA FIRMS</p>
+</header>
+<div class="layout">
+  <aside>
+    <div class="panel">
+      <h2>1. Zona</h2>
+      <label for="region">Departamento</label>
+      <select id="region"><option value="PE">Todo Perú</option></select>
+      <label>O un área propia: dibuja en el mapa (botones ▭ / ⬠) o ingresa un punto</label>
+      <div class="row"><input id="lat" placeholder="Latitud" type="number" step="0.01"><input id="lon" placeholder="Longitud" type="number" step="0.01"></div>
+      <div class="row"><input id="radius" placeholder="Radio km" type="number" value="25"><button id="usePoint" class="secondary" style="margin-top:0">Usar punto</button></div>
+      <button id="clearAoi" class="secondary">Volver al departamento</button>
+      <p class="note" id="zoneLabel"></p>
+    </div>
+    <div class="panel">
+      <h2>2. Fechas del mapa y del CSV</h2>
+      <div class="row"><div><label for="start">Desde</label><input id="start" type="date"></div><div><label for="end">Hasta</label><input id="end" type="date"></div></div>
+      <button id="refresh">Actualizar mapa</button>
+      <button id="csv" class="secondary">Descargar CSV</button>
+      <p class="note">Tip: haz clic en un mes del calendario para ver ese mes en el mapa.</p>
+    </div>
+    <div class="panel" id="summary"><h2>Resumen</h2><p class="note">Cargando…</p></div>
+  </aside>
+  <main>
+    <div id="map"></div>
+    <div class="panel" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 id="calTitle" style="margin:0">Calendario de quemas</h2>
+        <div class="toggle"><button id="modeCount" class="on">Cantidad</button><button id="modeAnom">Frente a lo normal</button></div>
+      </div>
+      <div class="legend" id="legend" style="margin:8px 0"></div>
+      <div id="calendar"></div>
+      <p class="note">Antes de 2012 los valores son MODIS convertido a escala VIIRS (estimados, con rango p10–p90 en el detalle). Desde 2012 son detecciones VIIRS observadas. "Normal" = entre los percentiles 25 y 75 del mismo mes en 2003–2022.</p>
+    </div>
+  </main>
+</div>
+<div id="tip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script>
+const API = '';                    // misma URL que la API
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+// Rampas accesibles para daltonismo: secuencial (YlOrRd de ColorBrewer) y divergente azul-naranja (PuOr)
+const SEQ = ['#ffffcc','#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'];
+const DIV = {bajo:'#4393c3', normal:'#f2f2f2', alto:'#e08214'};
+const state = { region:'PE', aoi:null, mode:'count', cal:null, lastDate:null };
+const $ = id => document.getElementById(id);
+const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('es-PE');
+const tip = $('tip');
+const showTip = (e, html) => { tip.innerHTML = html; tip.style.display = 'block'; tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; };
+const hideTip = () => tip.style.display = 'none';
+
+async function api(path, body) {
+  const opt = body ? { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) } : {};
+  const r = await fetch(API + path, opt);
+  if (!r.ok) throw new Error(await r.text());
+  return r;
+}
+
+// ---------------- mapa
+const map = L.map('map').setView([-9.2, -75], 5);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  { attribution:'© OpenStreetMap, © CARTO', maxZoom: 12 }).addTo(map);
+const hexLayer = L.geoJSON(null).addTo(map);
+const drawn = new L.FeatureGroup().addTo(map);
+map.addControl(new L.Control.Draw({
+  draw: { polyline:false, circle:false, circlemarker:false, marker:false,
+          polygon:{ shapeOptions:{ color:'#0b6e99' } }, rectangle:{ shapeOptions:{ color:'#0b6e99' } } },
+  edit: { featureGroup: drawn, edit:false }
+}));
+map.on(L.Draw.Event.CREATED, e => { drawn.clearLayers(); drawn.addLayer(e.layer); setAoi(e.layer.toGeoJSON().geometry, 'Área dibujada'); });
+
+function circlePolygon(lat, lon, km) {   // polígono de 48 lados aproximando un círculo
+  const pts = [];
+  for (let i = 0; i <= 48; i++) {
+    const a = i / 48 * 2 * Math.PI;
+    pts.push([lon + km / (111.32 * Math.cos(lat * Math.PI / 180)) * Math.cos(a), lat + km / 110.57 * Math.sin(a)]);
+  }
+  return { type:'Polygon', coordinates:[pts] };
+}
+$('usePoint').onclick = () => {
+  const lat = +$('lat').value, lon = +$('lon').value, km = +$('radius').value || 25;
+  if (!$('lat').value || !$('lon').value) return alert('Ingresa latitud y longitud');
+  const g = circlePolygon(lat, lon, km);
+  drawn.clearLayers(); drawn.addLayer(L.geoJSON(g, { style:{ color:'#0b6e99' } }));
+  map.fitBounds(drawn.getBounds());
+  setAoi(g, `Radio de ${km} km en ${lat}, ${lon}`);
+};
+$('clearAoi').onclick = () => { drawn.clearLayers(); state.aoi = null; loadAll(); };
+function setAoi(geom, label) { state.aoi = { geom, label }; loadAll(); }
+
+async function loadMap() {
+  const p = new URLSearchParams({ start:$('start').value, end:$('end').value, res: 6, fmt:'geojson' });
+  if (state.region !== 'PE' && !state.aoi) p.set('region_id', state.region);
+  const gj = await (await api('/heatmap?' + p)).json();
+  const vals = gj.features.map(f => f.properties.hs).sort((a, b) => a - b);
+  const brk = [0.2, 0.4, 0.6, 0.8, 0.95].map(qq => vals[Math.floor(qq * (vals.length - 1))] || 0);
+  const color = v => SEQ[brk.filter(b => v > b).length];
+  hexLayer.clearLayers();
+  hexLayer.addData(gj);
+  hexLayer.setStyle(f => ({ color: color(f.properties.hs), weight:0.5, fillColor: color(f.properties.hs), fillOpacity:0.8 }));
+  hexLayer.eachLayer(l => l.bindTooltip(`${fmt(l.feature.properties.hs)} hotspots<br>FRP ${fmt(l.feature.properties.frp)} MW`));
+  if (state.fit && gj.features.length) { map.fitBounds(hexLayer.getBounds(), { maxZoom: 8 }); state.fit = false; }
+}
+
+// ---------------- calendario
+function cellColor(m) {
+  if (!m) return '#fff';
+  if (state.mode === 'anom') return DIV[m.status];
+  const max = state.cal.maxHs || 1;
+  if (m.hs <= 0) return '#f4f4f1';
+  return SEQ[Math.min(SEQ.length - 1, Math.floor(Math.sqrt(m.hs / max) * SEQ.length))];
+}
+function drawLegend() {
+  const L_ = $('legend');
+  if (state.mode === 'anom') {
+    L_.innerHTML = `<span><i style="background:${DIV.bajo}"></i> por debajo de lo normal</span><span><i style="background:${DIV.normal};border:1px solid #ddd"></i> normal</span><span><i style="background:${DIV.alto}"></i> por encima de lo normal</span>`;
+  } else {
+    L_.innerHTML = 'menos ' + SEQ.map(c => `<i style="background:${c}"></i>`).join('') + ' más hotspots por mes';
+  }
+}
+function drawCalendar() {
+  const c = state.cal; if (!c) return;
+  c.maxHs = Math.max(...c.years.flatMap(y => y.months.filter(Boolean).map(m => m.hs)));
+  const cw = 40, ch = 20, left = 46, top = 22, barW = 140;
+  const maxTot = Math.max(...c.years.map(y => y.total)) || 1;
+  const W = left + 12 * cw + 16 + barW + 60, H = top + c.years.length * ch + 30;
+  let s = `<svg width="${W}" height="${H}" font-size="11" role="img" aria-label="Calendario de quemas">`;
+  MONTHS.forEach((m, i) => s += `<text x="${left + i * cw + cw / 2}" y="14" text-anchor="middle" fill="#6b6b66">${m}</text>`);
+  s += `<text x="${left + 12 * cw + 16}" y="14" fill="#6b6b66">Total del año</text>`;
+  c.years.forEach((y, r) => {
+    const yy = top + r * ch;
+    const est = y.months.some(m => m && m.estimated);
+    s += `<text x="${left - 6}" y="${yy + 14}" text-anchor="end" fill="${est ? '#9a9a94' : '#1d1d1b'}">${y.year}${est ? '*' : ''}</text>`;
+    y.months.forEach((m, i) => {
+      if (!m) return;
+      s += `<rect class="cell" data-y="${y.year}" data-m="${i}" x="${left + i * cw + 1}" y="${yy + 1}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${cellColor(m)}" stroke="${m.estimated ? '#b8b8b0' : 'none'}" stroke-dasharray="${m.estimated ? '2 2' : ''}" style="cursor:pointer"/>`;
+    });
+    const bw = y.total / maxTot * barW;
+    s += `<rect x="${left + 12 * cw + 16}" y="${yy + 4}" width="${bw}" height="${ch - 8}" fill="${est ? '#c9c9c2' : '#0b6e99'}" rx="2"/>`;
+    s += `<text x="${left + 12 * cw + 20 + bw}" y="${yy + 14}" fill="#6b6b66">${fmt(y.total)}</text>`;
+  });
+  s += `<text x="${left}" y="${H - 6}" fill="#9a9a94">* año con meses estimados desde MODIS (borde punteado)</text></svg>`;
+  $('calendar').innerHTML = s;
+  document.querySelectorAll('rect.cell').forEach(el => {
+    const y = +el.dataset.y, i = +el.dataset.m;
+    const m = c.years.find(v => v.year === y).months[i], cl = c.climatology[i];
+    el.onmousemove = e => showTip(e, `<b>${MONTHS[i]} ${y}</b><br>${fmt(m.hs)} hotspots` +
+      (m.estimated ? ` (rango ${fmt(m.hs_lo)}–${fmt(m.hs_hi)}, estimado)` : ' (VIIRS observado)') +
+      `<br>Mediana ${MONTHS[i]}: ${fmt(cl.median)} · ${m.pct_of_median ?? '–'}% de la mediana<br>Estado: ${m.status}`);
+    el.onmouseleave = hideTip;
+    el.onclick = () => {   // ver ese mes en el mapa
+      const last = new Date(y, i + 1, 0);
+      $('start').value = `${y}-${String(i + 1).padStart(2, '0')}-01`;
+      $('end').value = `${y}-${String(i + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
+      loadMap();
+    };
+  });
+  drawLegend();
+}
+function drawSummary() {
+  const c = state.cal, cur = c.current_month;
+  const all = c.years.flatMap(y => y.months.filter(Boolean).map(m => ({ ...m, year:y.year })));
+  const peakMon = c.climatology.reduce((a, b) => b.median > a.median ? b : a);
+  const topYear = c.years.reduce((a, b) => b.total > a.total ? b : a);
+  const st = cur && cur.pct_of_median != null ? (cur.hs > c.climatology[cur.mon - 1].p75 ? 'alto' : cur.hs < c.climatology[cur.mon - 1].p25 ? 'bajo' : 'normal') : 'normal';
+  $('summary').innerHTML = `<h2>Resumen · ${c.name}</h2>
+    ${cur ? `<div class="kpi">${fmt(cur.hs)} <small>hotspots en ${MONTHS[cur.mon - 1]} ${cur.year} (mes en curso, hasta ${c.last_date})</small></div>
+    <p class="status-${st}" style="margin:2px 0 10px">${cur.pct_of_median ?? '–'}% de la mediana de ${MONTHS[cur.mon - 1]} (${fmt(c.climatology[cur.mon - 1].median)})</p>` : ''}
+    <p style="margin:4px 0">Mes con más quemas en un año típico: <b>${MONTHS[peakMon.mon - 1]}</b> (mediana ${fmt(peakMon.median)})</p>
+    <p style="margin:4px 0">Año con más quemas: <b>${topYear.year}</b> (${fmt(topYear.total)})</p>
+    <p class="note">Unidad: ${c.unit}. Línea base ${c.baseline}.</p>`;
+}
+async function loadCalendar() {
+  const r = state.aoi ? await api('/calendar/aoi', state.aoi.geom) : await api('/calendar?region_id=' + state.region);
+  state.cal = await r.json();
+  $('calTitle').textContent = 'Calendario de quemas · ' + (state.aoi ? state.aoi.label : state.cal.name);
+  $('zoneLabel').textContent = 'Zona activa: ' + (state.aoi ? state.aoi.label : state.cal.name);
+  drawCalendar(); drawSummary();
+}
+async function loadAll() {
+  try { await Promise.all([loadCalendar(), loadMap()]); }
+  catch (e) { $('summary').innerHTML = '<h2>Resumen</h2><p class="note">Error: ' + e.message + '</p>'; }
+}
+
+// ---------------- CSV
+$('csv').onclick = async () => {
+  const p = new URLSearchParams({ start:$('start').value, end:$('end').value });
+  let r;
+  if (state.aoi) r = await api('/export/aoi.csv?' + p, state.aoi.geom);
+  else { if (state.region !== 'PE') p.set('region_id', state.region); r = await api('/export.csv?' + p); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(await r.blob());
+  a.download = `hotspots_${state.aoi ? 'area' : state.region}_${$('start').value}_${$('end').value}.csv`;
+  a.click();
+};
+
+// ---------------- inicio
+$('region').onchange = e => { state.region = e.target.value; state.aoi = null; state.fit = true; drawn.clearLayers(); loadAll(); };
+$('refresh').onclick = loadMap;
+$('modeCount').onclick = () => { state.mode = 'count'; $('modeCount').classList.add('on'); $('modeAnom').classList.remove('on'); drawCalendar(); };
+$('modeAnom').onclick = () => { state.mode = 'anom'; $('modeAnom').classList.add('on'); $('modeCount').classList.remove('on'); drawCalendar(); };
+(async () => {
+  const [regs, health] = await Promise.all([api('/regions').then(r => r.json()), api('/health').then(r => r.json())]);
+  regs.forEach(r => $('region').insertAdjacentHTML('beforeend', `<option value="${r.region_id}">${r.name}</option>`));
+  const end = new Date(health.last_date), start = new Date(end); start.setMonth(start.getMonth() - 2);
+  $('end').value = health.last_date; $('start').value = start.toISOString().slice(0, 10);
+  loadAll();
+})();
+</script>
+</body>
+</html>

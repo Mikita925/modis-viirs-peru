@@ -1,0 +1,758 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fire Calendar of Peru</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a story page (hero with fire clock, sensors, three Perus, method) and an explorer view; woven textile bands divide sections */
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --ink:#211A1F; --muted:#5E555B; --line:#DDD5D0;
+  --crimson:#A3203A; --maize:#E2A52B; --selva:#1E6B52; --costa:#2B5E8C; --sierra:#B26B1F;
+  --cell0:#ECE6E1; --soft:#F1E7E3;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17121A; --surface:#211A25; --ink:#F3EDEA; --muted:#B3A8AE; --line:#3A3040;
+  --crimson:#EC5B75; --maize:#F2C14F; --selva:#4FB38D; --costa:#72A8DE; --sierra:#E19A4C;
+  --cell0:#2C2431; --soft:#2A1F28; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17121A; --surface:#211A25; --ink:#F3EDEA; --muted:#B3A8AE; --line:#3A3040;
+  --crimson:#EC5B75; --maize:#F2C14F; --selva:#4FB38D; --costa:#72A8DE; --sierra:#E19A4C;
+  --cell0:#2C2431; --soft:#2A1F28; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--maize);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.08}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+.kicker{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--crimson)}
+.muted{color:var(--muted)}
+
+/* textile band: rombos escalonados, drawn with a mask so it follows the theme */
+.weave{height:22px;background:
+  linear-gradient(90deg,var(--crimson) 0 25%,var(--maize) 25% 50%,var(--selva) 50% 75%,var(--costa) 75% 100%);background-size:176px 22px;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22'%3E%3Cpath d='M22 0h4v4h4v4h4v4h-4v4h-4v4h-4v-4h-4v-4h-4v-4h4V4h4zM0 9h4v4H0zM40 9h4v4h-4z' fill='%23000'/%3E%3Cpath d='M20 9h4v4h-4z' fill='%23000' fill-opacity='0'/%3E%3C/svg%3E") repeat-x;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22'%3E%3Cpath d='M22 0h4v4h4v4h4v4h-4v4h-4v4h-4v-4h-4v-4h-4v-4h4V4h4zM0 9h4v4H0zM40 9h4v4h-4z' fill='%23000'/%3E%3C/svg%3E") repeat-x;opacity:.9}
+.weave.thin{height:12px;-webkit-mask-size:24px 12px;mask-size:24px 12px;background-size:96px 12px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:color-mix(in oklab,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-display);font-weight:800;font-size:20px}
+.brand small{font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--muted);display:block;line-height:1}
+.nav{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav a{text-decoration:none;padding:7px 13px;border-radius:999px;font-size:15px;color:var(--muted)}
+.nav a:hover{color:var(--ink);background:var(--soft)}
+.nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:6px}
+.lang button{border:0;background:transparent;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--crimson);color:#fff}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-block:48px 40px}
+.hero h1{font-size:clamp(38px,5.4vw,68px);font-weight:800;letter-spacing:-.02em}
+.hero h1 .fire{color:var(--crimson)}
+.hero .lead{font-size:19px;color:var(--muted);max-width:50ch;margin:18px 0 26px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700;border:2px solid var(--ink);background:transparent;cursor:pointer}
+.btn.primary{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.btn:hover{transform:translateY(-1px)}
+.clock-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px;position:relative}
+.clock-card h2{font-size:18px;font-weight:700}
+.clock-card .hint{font-size:14px;color:var(--muted)}
+.clock svg{width:100%;height:auto;display:block;max-width:420px;margin:0 auto}
+.wedge{cursor:pointer;transition:opacity .2s}
+.wedge:hover,.wedge.on{opacity:1!important;stroke:var(--ink);stroke-width:1.5}
+.clock-read{min-height:3.2em;text-align:center;font-size:16px}
+.clock-read b{color:var(--crimson)}
+
+/* sections */
+section.story{padding-block:56px}
+.sec-head{max-width:720px;margin-bottom:28px}
+.sec-head h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;margin:8px 0 12px}
+.sec-head p{color:var(--muted);font-size:18px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.pixels{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.pixels svg{width:100%;height:auto;display:block}
+.facts{display:grid;gap:16px}
+.fact{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;align-items:start}
+.fact .big{white-space:nowrap;font-family:var(--f-display);font-weight:800;font-size:26px;color:var(--crimson);line-height:1}
+.fact h3{font-size:19px;margin-bottom:4px}
+.fact p{color:var(--muted)}
+.regions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.region{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;border-top:6px solid var(--c)}
+.region h3{font-size:24px;font-weight:800}
+.region .sub{font-size:14px;color:var(--muted)}
+.region .share{font-family:var(--f-display);font-weight:800;font-size:34px;color:var(--c);line-height:1;margin-top:10px}
+.region p.desc{font-size:15px;color:var(--muted);margin-top:8px}
+.region svg{width:100%;max-width:230px;height:auto;display:block;margin:6px auto 0}
+.morph{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.morph svg{width:100%;height:auto;display:block}
+.slider-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.slider-row input[type=range]{flex:1;min-width:180px;accent-color:var(--crimson);height:28px}
+.slider-row .lab{font-weight:700;font-size:15px;min-width:0}
+.morph-msg{margin-top:10px;font-size:17px;min-height:3.2em}
+details.sci{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+details.sci summary{cursor:pointer;font-weight:700}
+details.sci .formula{font-family:var(--f-mono);font-size:14px;overflow-x:auto;white-space:nowrap;padding:10px 0}
+details.sci ul{margin:6px 0 0;padding-left:20px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.metric{border-left:4px solid var(--maize);padding-left:14px}
+.metric .v{font-family:var(--f-display);font-weight:800;font-size:42px;line-height:1.05}
+.metric .l{color:var(--muted);font-size:15px}
+.team{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.card h3{font-size:21px;margin:6px 0 8px}
+.card p{color:var(--muted);margin-bottom:8px}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:12px;padding:3px 10px;border-radius:999px;background:var(--soft);margin:0 6px 6px 0}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer .wrap{padding-block:22px;display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}
+
+/* explorer */
+.ex-head{display:flex;gap:16px;align-items:end;justify-content:space-between;flex-wrap:wrap;padding-block:26px 14px}
+.ex-head h1{font-size:clamp(28px,3.6vw,40px);font-weight:800}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:700}
+.field select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:400;color:var(--ink);max-width:100%}
+.plain{background:var(--soft);border-radius:16px;padding:16px 20px;font-size:19px;margin-bottom:16px;border-left:6px solid var(--crimson)}
+.plain b{color:var(--crimson)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.tile .l{font-size:13px;color:var(--muted);font-weight:700}
+.tile .v{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1.15}
+.tile .s{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.pill.alto{background:color-mix(in oklab,var(--crimson) 18%,var(--surface));color:var(--crimson)}
+.pill.bajo{background:color-mix(in oklab,var(--costa) 18%,var(--surface));color:var(--costa)}
+.pill.normal{background:var(--cell0);color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:16px;margin-bottom:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.panel-h{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.panel-h h2{font-size:20px;font-weight:800}
+.howto{font-size:14px;color:var(--muted);margin-bottom:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:7px 13px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+#map svg{width:100%;height:auto;display:block;max-height:640px}
+.dep{stroke:var(--surface);stroke-width:1.2;cursor:pointer;vector-effect:non-scaling-stroke}
+.dep:hover{stroke:var(--ink)}
+.dep.sel{stroke:var(--ink);stroke-width:2.6}
+.scroll{overflow-x:auto}
+#cal svg{display:block;min-width:620px;width:100%;height:auto}
+.cal-cell{cursor:pointer}
+.cal-cell:hover{stroke:var(--ink);stroke-width:1.5}
+.scale{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap;margin-top:6px}
+.scale .bar{height:10px;width:140px;border-radius:5px}
+.note{font-size:13px;color:var(--muted);margin-top:6px}
+.axis text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.axis line{stroke:var(--line)}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:14px;padding:8px 10px;border-radius:8px;max-width:260px;line-height:1.4}
+table.params{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+table.params th,table.params td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.params td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.csv-box{width:100%;height:120px;font-family:var(--f-mono);font-size:12px;margin-top:8px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+
+@media (max-width:920px){
+  .hero,.two{grid-template-columns:minmax(0,1fr);gap:26px}
+  .hero{padding-block:30px}
+  .regions{grid-template-columns:minmax(0,1fr)}
+  .metrics,.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .team,.grid2{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="Home">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="var(--crimson)"/><path d="M17 5h3v3h3v3h3v3h-3v3h-3v3h-3v-3h-3v-3h-3v-3h3V8h3z" fill="var(--maize)"/><path d="M17 15c1.6 2.4 4 3.4 4 6.6a4 4 0 0 1-8 0c0-1.6.8-2.6 1.7-3.3.1 1.2.6 1.9 1.3 2.2.2-2-.2-3.8 1-5.5Z" fill="#fff"/></svg>
+      <span><span data-t="brand">Fire Calendar of Peru</span><small data-t="brandSub">MODIS + VIIRS · 2003–{Y1}</small></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#home" data-t="navStory">The story</a>
+      <a href="#method" data-t="navMethod">Method</a>
+      <a href="#explore" data-t="navExplore">Explore the data</a>
+      <span class="lang" role="group" aria-label="Language / Idioma"><button id="lang-en" aria-pressed="true">EN</button><button id="lang-es" aria-pressed="false">ES</button></span>
+    </nav>
+  </div>
+</header>
+
+<main id="view-story">
+  <div class="wrap hero" id="home">
+    <div>
+      <div class="kicker" data-t="kicker">NASA Space Apps 2026 · Peru</div>
+      <h1 style="margin-top:12px" data-th="heroTitle">Every year, Peru has a <span class="fire">fire season</span>. Now we can see {NYR} years of it.</h1>
+      <p class="lead" data-t="heroLead">Satellites spot fires from space, but the old and the new satellites count them differently. We joined them into one fair record, region by region, so anyone can see when and where Peru burns.</p>
+      <div class="cta">
+        <a class="btn primary" href="#explore" data-t="ctaExplore">Explore your region →</a>
+        <a class="btn" href="#method" data-t="ctaHow">How we did it</a>
+      </div>
+    </div>
+    <div class="clock-card">
+      <h2 data-t="clockTitle">Peru's fire clock</h2>
+      <p class="hint" data-t="clockHint">Each slice is a month. The longer the slice, the more fires in a typical year. Hover or tap a month.</p>
+      <div class="clock" id="clock-pe"></div>
+      <p class="clock-read" id="clock-read" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="weave" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap two">
+      <div>
+        <div class="kicker" data-t="k1">1 · How satellites see fire</div>
+        <div class="sec-head" style="margin-top:8px">
+          <h2 data-t="s1Title">Two eyes in the sky, with different eyesight</h2>
+          <p data-t="s1Lead">A “hotspot” is a spot on the ground that the satellite sees as much hotter than its surroundings, usually a fire. MODIS has watched since 2000. VIIRS joined in 2012 with a sharper view.</p>
+        </div>
+        <div class="facts">
+          <div class="fact"><div class="big">1 km</div><div><h3 data-t="f1t">MODIS sees in large squares</h3><p data-t="f1p">A small farm burn can get lost inside a 1 km square.</p></div></div>
+          <div class="fact"><div class="big">375 m</div><div><h3 data-t="f2t">VIIRS sees in small squares</h3><p data-t="f2p">The same small fire fills more of its square, so it gets detected.</p></div></div>
+          <div class="fact"><div class="big num" id="ratio">×4.8</div><div><h3 data-t="f3t">So VIIRS counts more fires</h3><p data-t="f3p">Over Peru, VIIRS finds almost five times as many hotspots as MODIS. Comparing them directly would be unfair.</p></div></div>
+        </div>
+      </div>
+      <figure class="pixels" style="margin:0">
+        <svg viewBox="0 0 520 300" role="img" aria-label="One 1 km pixel compared with 375 m pixels over the same small fire" id="pix"></svg>
+        <figcaption class="muted" style="font-size:14px;margin-top:6px" data-t="pixCap">Same field, same small fire. In the 1 km view the heat is diluted; in the 375 m view one square lights up.</figcaption>
+      </figure>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap">
+      <div class="kicker" data-t="k2">2 · One country, three worlds</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s2Title">Coast, Andes and Amazon burn at different times</h2>
+        <p data-t="s2Lead">Peru's climates are so different that one conversion for the whole country is not enough. Each region gets its own adjustment, with its own fire season.</p>
+      </div>
+      <div class="regions" id="regions"></div>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story" id="method">
+    <div class="wrap">
+      <div class="kicker" data-t="k3">3 · Making one record</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s3Title">Slide to harmonize</h2>
+        <p data-t="s3Lead">If we simply add up all satellites, fire seems to explode in 2012 and again in 2018. Those jumps are new satellites arriving, not more fire. Move the slider to convert everything to one VIIRS scale.</p>
+      </div>
+      <div class="morph">
+        <svg viewBox="0 0 1000 320" id="morph" role="img" aria-label="Hotspots per year in Peru"></svg>
+        <div class="slider-row">
+          <span class="lab" data-t="rawLab">Satellites added up</span>
+          <input type="range" id="harm" min="0" max="100" value="100" aria-label="Harmonization">
+          <span class="lab" style="color:var(--crimson)" data-t="harmLab">Harmonized</span>
+        </div>
+        <p class="morph-msg" id="morph-msg" aria-live="polite"></p>
+      </div>
+      <details class="sci">
+        <summary data-t="sciTitle">For scientists: the model</summary>
+        <div class="formula">log(VIIRS + 1) = a + d · high_season + b · log(MODIS + 1)</div>
+        <ul>
+          <li data-t="sci1">Fit per region on monthly counts, 2012–2022 (both sensors active). Regions with fewer than 24 fire months use the national fit.</li>
+          <li data-t="sci2">high_season = months whose average count is above the region's own monthly average.</li>
+          <li data-t="sci3">Back-transform with Duan smearing; p10–p90 of residuals gives the range shown for pre-2012 estimates.</li>
+          <li data-t="sci4">From 2012: one VIIRS satellite per day (NOAA-20 from April 2018, S-NPP before). Vegetation fires, nominal and high confidence.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap">
+      <div class="kicker" data-t="k4">4 · Does it work?</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s4Title">Tested on years the model never saw</h2>
+        <p data-t="s4Lead">We trained on 2012–2019 and checked 2020–2022 against real VIIRS counts.</p>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="v num" data-t="m1v">0.98</div><div class="l" data-t="m1">R² for Peru's monthly total</div></div>
+        <div class="metric"><div class="v num">±11%</div><div class="l" data-t="m2">typical monthly error for all of Peru</div></div>
+        <div class="metric"><div class="v num">78%</div><div class="l" data-t="m3">of real months fall inside our range</div></div>
+        <div class="metric"><div class="v num" id="n-reg">26</div><div class="l" data-t="m4">regions with a 2003–{Y1} record</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story" style="padding-top:0">
+    <div class="wrap team">
+      <div class="card">
+        <div class="kicker" data-t="chTitle">The challenge</div>
+        <h3>Harmonization of MODIS and VIIRS Hot Spots</h3>
+        <p data-t="chText">Proposed by CONAE (Argentina) for NASA Space Apps Challenge 2026: build one continuous hotspot record from both sensors.</p>
+        <div><span class="chip">NASA FIRMS</span><span class="chip">MODIS C6.1</span><span class="chip">VIIRS 375 m</span><span class="chip">H3</span><span class="chip">PostGIS</span><span class="chip">FastAPI</span></div>
+      </div>
+      <div class="card">
+        <div class="kicker" data-t="tmTitle">The team</div>
+        <h3 data-t="tmName">Team name</h3>
+        <p data-t="tmText">Lima, Peru. Replace this text with team members and roles.</p>
+        <p data-t="tmNext">Next steps: provinces and districts, land cover (crop vs. forest), and finer seasonality.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main id="view-explore" hidden>
+  <div class="weave thin" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="ex-head">
+      <div>
+        <div class="kicker" data-t="exKicker">Explore the data · FIRMS 2003–{Y1}</div>
+        <h1 id="d-title">All of Peru</h1>
+      </div>
+      <div class="controls">
+        <label class="field" for="sel-dep"><span data-t="lblArea">Region</span><select id="sel-dep"></select></label>
+        <label class="field" for="sel-year"><span data-t="lblYear">Year</span><select id="sel-year"></select></label>
+        <label class="field" for="sel-month"><span data-t="lblMonth">Month</span><select id="sel-month"></select></label>
+      </div>
+    </div>
+
+    <p class="plain" id="plain" aria-live="polite"></p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l" id="t1-l"></div><div class="v num" id="t1"></div><div class="s num" id="t1-s"></div></div>
+      <div class="tile"><div class="l" data-t="t2l">Compared with a typical year</div><div class="v num" id="t2"></div><div class="s" id="t2-s"></div></div>
+      <div class="tile"><div class="l" data-t="t3l">Peak month</div><div class="v" id="t3"></div><div class="s num" id="t3-s"></div></div>
+      <div class="tile"><div class="l" data-t="t4l">Where the number comes from</div><div class="v" id="t4"></div><div class="s" id="t4-s"></div></div>
+    </div>
+
+    <div class="grid2">
+      <section class="panel" aria-labelledby="map-h">
+        <div class="panel-h">
+          <h2 id="map-h" data-t="mapTitle">Map</h2>
+          <div class="seg" role="group" aria-label="Map type">
+            <button id="mm-dep" aria-pressed="true" data-t="mmDep">Regions</button>
+            <button id="mm-heat" aria-pressed="false" data-t="mmHeat">Heat {HY}</button>
+          </div>
+        </div>
+        <p class="howto" id="map-howto"></p>
+        <div id="map"></div>
+        <div class="scale" id="map-scale"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="cal-h">
+        <div class="panel-h">
+          <h2 id="cal-h" data-t="calTitle">Burning calendar</h2>
+          <div class="seg" role="group" aria-label="Calendar mode">
+            <button id="cm-n" aria-pressed="true" data-t="cmN">How many</button>
+            <button id="cm-a" aria-pressed="false" data-t="cmA">Unusual?</button>
+          </div>
+        </div>
+        <p class="howto" data-t="calHow">Each row is a year, each square a month. Darker red means more fires. Tap a square to see that month on the map.</p>
+        <div class="scroll" id="cal"></div>
+        <div class="scale" id="cal-scale"></div>
+        <p class="note" data-t="calNote">* Years before 2012 are estimated from MODIS (dotted border).</p>
+      </section>
+    </div>
+
+    <details class="sci" style="margin-bottom:16px">
+      <summary data-t="sciPanel">For scientists: fit for this region and monthly data</summary>
+      <div id="sci-body"></div>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn" id="btn-csv" type="button" style="padding:8px 16px" data-t="csvBtn">Copy monthly CSV</button>
+        <span class="note" data-th="csvNote">Server version: <span class="mono">GET /export.csv</span></span>
+      </div>
+      <textarea id="csv-box" class="csv-box" hidden readonly aria-label="CSV"></textarea>
+    </details>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-t="foot">Data: NASA FIRMS (MODIS C6.1 and VIIRS 375 m, standard product, nominal and high confidence, vegetation fires). Boundaries: geoBoundaries.</span>
+    <span>Space Apps 2026 · Lima</span>
+  </div>
+</footer>
+<div id="tip" hidden></div>
+
+<script type="text/plain" id="data">
+__DATA__
+</script>
+<script>
+(function(){
+"use strict";
+const Y0=2003,VI=108;let NY=23,N=276,HY=2024;
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+function el(tag,a,p){const n=document.createElementNS(NS,tag);for(const k in a)n.setAttribute(k,a[k]);if(p)p.appendChild(n);return n}
+
+// ---------- texts ----------
+const TX={
+en:{brandSub:"MODIS + VIIRS · 2003–{Y1}",brand:"Fire Calendar of Peru",navStory:"The story",navMethod:"Method",navExplore:"Explore the data",kicker:"NASA Space Apps 2026 · Peru",
+heroTitle:'Every year, Peru has a <span class="fire">fire season</span>. Now we can see {NYR} years of it.',
+heroLead:"Satellites spot fires from space, but the old and the new satellites count them differently. We joined them into one fair record, region by region, so anyone can see when and where Peru burns.",
+ctaExplore:"Explore your region →",ctaHow:"How we did it",clockTitle:"Peru's fire clock",clockHint:"Each slice is a month. The longer the slice, the more fires in a typical year. Hover or tap a month.",
+k1:"1 · How satellites see fire",s1Title:"Two eyes in the sky, with different eyesight",s1Lead:"A “hotspot” is a spot on the ground that the satellite sees as much hotter than its surroundings, usually a fire. MODIS has watched since 2000. VIIRS joined in 2012 with a sharper view.",
+f1t:"MODIS sees in large squares",f1p:"A small farm burn can get lost inside a 1 km square.",f2t:"VIIRS sees in small squares",f2p:"The same small fire fills more of its square, so it gets detected.",f3t:"So VIIRS counts more fires",f3p:"Over Peru, VIIRS finds almost five times as many hotspots as MODIS. Comparing them directly would be unfair.",
+pixCap:"Same field, same small fire. In the 1 km view the heat is diluted; in the 375 m view one square lights up.",
+k2:"2 · One country, three worlds",s2Title:"Coast, Andes and Amazon burn at different times",s2Lead:"Peru's climates are so different that one conversion for the whole country is not enough. Each region gets its own adjustment, with its own fire season.",
+k3:"3 · Making one record",s3Title:"Slide to harmonize",s3Lead:"If we simply add up all satellites, fire seems to explode in 2012 and again in 2018. Those jumps are new satellites arriving, not more fire. Move the slider to convert everything to one VIIRS scale.",
+rawLab:"Satellites added up",harmLab:"Harmonized",sciTitle:"For scientists: the model",
+sci1:"Fit per region on monthly counts, 2012–2022 (both sensors active). Regions with fewer than 24 fire months use the national fit.",
+sci2:"high_season = months whose average count is above the region's own monthly average.",
+sci3:"Back-transform with Duan smearing; p10–p90 of residuals gives the range shown for pre-2012 estimates.",
+sci4:"From 2012: one VIIRS satellite per day (NOAA-20 from April 2018, S-NPP before). Vegetation fires, nominal and high confidence.",
+k4:"4 · Does it work?",s4Title:"Tested on years the model never saw",s4Lead:"We trained on 2012–2019 and checked 2020–2022 against real VIIRS counts.",
+m1v:"0.98",m1:"R² for Peru's monthly total",m2:"typical monthly error for all of Peru",m3:"of real months fall inside our range",m4:"regions with a 2003–{Y1} record",
+chTitle:"The challenge",chText:"Proposed by CONAE (Argentina) for NASA Space Apps Challenge 2026: build one continuous hotspot record from both sensors.",
+tmTitle:"The team",tmName:"Team name",tmText:"Lima, Peru. Replace this text with team members and roles.",tmNext:"Next steps: provinces and districts, land cover (crop vs. forest), and finer seasonality.",
+exKicker:"Explore the data · FIRMS 2003–{Y1}",lblArea:"Region",lblYear:"Year",lblMonth:"Month",t2l:"Compared with a typical year",t3l:"Peak month",t4l:"Where the number comes from",
+mapTitle:"Map",mmDep:"Regions",mmHeat:"Heat {HY}",calTitle:"Burning calendar",cmN:"How many",cmA:"Unusual?",
+calHow:"Each row is a year, each square a month. Darker red means more fires. Tap a square to see that month on the map.",
+calNote:"* Years before 2012 are estimated from MODIS (dotted border).",sciPanel:"For scientists: fit for this region and monthly data",csvBtn:"Copy monthly CSV",
+csvNote:'Server version: <span class="mono">GET /export.csv</span>',
+foot:"Data: NASA FIRMS (MODIS C6.1 and VIIRS 375 m, standard product, nominal and high confidence, vegetation fires). Boundaries: geoBoundaries.",
+months:["January","February","March","April","May","June","July","August","September","October","November","December"],
+mshort:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+allPeru:"All of Peru",lima:"Metropolitan Lima",wholeYear:"Whole year",est:"estimated",
+costa:"Coast",sierra:"Andes",selva:"Amazon",costaSub:"Desert coast, from Tumbes to Tacna",sierraSub:"Highlands, from Cajamarca to Puno",selvaSub:"Rainforest: Loreto, Ucayali, San Martín, Madre de Dios",
+shareOf:"of Peru's fires",
+costaDesc:"Few fires, spread through the year: crop residue burning in the valleys.",
+sierraDesc:"Fires peak in the dry season, July to October, when grasslands and fields are burned before the rains.",
+selvaDesc:"Fires concentrate in August and September, when cleared forest and farmland are burned.",
+clockRead:(m,v,s)=>`In a typical <b>${m}</b>, satellites detect about <b>${v}</b> hotspots in Peru${s}.`,
+peakNote:" — the peak of the season",
+morphMsg:(p,j)=>p<15?`Satellites simply added up: from 2011 to 2012 the count jumps <b>×${j}</b>. That is a new satellite, not more fire.`:p>85?`Harmonized: the 2011 to 2012 step is only <b>×${j}</b>. Years before 2012 (hollow dots) are estimates with their range.`:`Converting… ${p}%`,
+yearsAxis:"k",
+plain:(o)=>`In ${o.when}, <b>${o.zone}</b> had about <b>${o.v}</b> fire hotspots${o.est?" (estimated from MODIS)":""}. That is <b>${o.pct}</b> of a typical ${o.month?"month":"year"}: ${o.st}.${o.month?"":` Fire peaked in ${o.peak}.`}`,
+stWord:{alto:"higher than usual",bajo:"lower than usual",normal:"within the usual range"},stShort:{alto:"high",bajo:"low",normal:"normal"},
+hsIn:w=>`Hotspots in ${w}`,range:"range",viirsEq:"VIIRS equivalent",median:"typical",hsWord:"hotspots",
+src1:"Adjusted MODIS",src2:"VIIRS",fitReg:"regional fit",fitNat:"national fit",fitAll:"one fit per region",snpp:"Suomi-NPP",n20:"NOAA-20 (S-NPP as backup)",
+mapHowDep:(w)=>`Color shows fires per 1,000 km² in ${w}. Tap a region to select it; tap again to go back to all of Peru.`,
+mapHowHeat:"Every square is 0.25° (about 28 km). Brighter means more VIIRS hotspots in {HY}.",
+per1000:"hotspots per 1,000 km²",heatScale:"VIIRS hotspots in {HY} per square",calScaleN:"Hotspots per month",
+calScaleA:'<span class="pill bajo">low</span> below the usual range <span class="pill normal">normal</span> <span class="pill alto">high</span> above the usual range (2003–2022)',
+tipCal:(o)=>`<b>${o.m} ${o.y}</b>${o.est?" · estimated":""}<br>${o.v} hotspots${o.r}<br>Typical ${o.m}: ${o.med}<br>${o.st}`,
+annual:"Year total",
+sciHead:["Region","Fit","a","d","b","High season","Months"],own:"own",nat:"national",
+csvCopied:"CSV copied",csvSelect:"Select and copy the text",
+loc:"en-US"},
+es:{brandSub:"MODIS + VIIRS · 2003–{Y1}",brand:"Calendario del Fuego del Perú",navStory:"La historia",navMethod:"Método",navExplore:"Explora los datos",kicker:"NASA Space Apps 2026 · Perú",
+heroTitle:'Cada año el Perú tiene una <span class="fire">temporada de fuego</span>. Ahora podemos ver {NYR} años de ella.',
+heroLead:"Los satélites detectan fuegos desde el espacio, pero los satélites antiguos y los nuevos los cuentan distinto. Los unimos en un solo registro justo, región por región, para que cualquiera vea cuándo y dónde se quema el Perú.",
+ctaExplore:"Explora tu región →",ctaHow:"Cómo lo hicimos",clockTitle:"El reloj del fuego del Perú",clockHint:"Cada tajada es un mes. Mientras más larga, más fuegos en un año típico. Pasa el cursor o toca un mes.",
+k1:"1 · Cómo ven el fuego los satélites",s1Title:"Dos ojos en el cielo, con distinta vista",s1Lead:"Un “foco de calor” es un punto del suelo que el satélite ve mucho más caliente que su entorno, casi siempre un fuego. MODIS observa desde 2000. VIIRS llegó en 2012 con una vista más fina.",
+f1t:"MODIS ve en cuadros grandes",f1p:"Una quema pequeña en una chacra se puede perder dentro de un cuadro de 1 km.",f2t:"VIIRS ve en cuadros pequeños",f2p:"El mismo fuego pequeño ocupa más de su cuadro, así que sí se detecta.",f3t:"Por eso VIIRS cuenta más fuegos",f3p:"En el Perú, VIIRS encuentra casi cinco veces más focos que MODIS. Compararlos tal cual sería injusto.",
+pixCap:"Mismo campo, mismo fuego pequeño. En la vista de 1 km el calor se diluye; en la de 375 m se enciende un cuadro.",
+k2:"2 · Un país, tres mundos",s2Title:"Costa, sierra y selva se queman en meses distintos",s2Lead:"Los climas del Perú son tan distintos que una sola conversión para todo el país no alcanza. Cada departamento tiene su propio ajuste, con su propia temporada de fuego.",
+k3:"3 · Un solo registro",s3Title:"Desliza para armonizar",s3Lead:"Si solo sumamos todos los satélites, el fuego parece explotar en 2012 y otra vez en 2018. Esos saltos son satélites nuevos, no más fuego. Mueve el control para llevar todo a una sola escala VIIRS.",
+rawLab:"Satélites sumados",harmLab:"Armonizada",sciTitle:"Para científicos: el modelo",
+sci1:"Ajuste por departamento con conteos mensuales 2012–2022 (ambos sensores activos). Los departamentos con menos de 24 meses con fuego usan el ajuste nacional.",
+sci2:"temporada_alta = meses cuyo promedio supera el promedio mensual del propio departamento.",
+sci3:"Retransformación con smearing de Duan; los percentiles p10–p90 de los residuos dan el rango de las estimaciones antes de 2012.",
+sci4:"Desde 2012: un satélite VIIRS por día (NOAA-20 desde abril de 2018, S-NPP antes). Fuegos de vegetación, confianza nominal y alta.",
+k4:"4 · ¿Funciona?",s4Title:"Probado con años que el modelo nunca vio",s4Lead:"Entrenamos con 2012–2019 y comparamos 2020–2022 con los conteos reales de VIIRS.",
+m1v:"0,98",m1:"R² del total mensual del Perú",m2:"error mensual típico para todo el Perú",m3:"de los meses reales caen dentro de nuestro rango",m4:"departamentos con registro 2003–{Y1}",
+chTitle:"El reto",chText:"Propuesto por CONAE (Argentina) para NASA Space Apps Challenge 2026: construir un registro continuo de focos de calor con ambos sensores.",
+tmTitle:"El equipo",tmName:"Nombre del equipo",tmText:"Lima, Perú. Reemplaza este texto con los integrantes y sus roles.",tmNext:"Siguientes pasos: provincias y distritos, cobertura del suelo (cultivo o bosque) y estacionalidad más fina.",
+exKicker:"Explora los datos · FIRMS 2003–{Y1}",lblArea:"Departamento",lblYear:"Año",lblMonth:"Mes",t2l:"Frente a un año típico",t3l:"Mes con más fuego",t4l:"De dónde sale el número",
+mapTitle:"Mapa",mmDep:"Departamentos",mmHeat:"Calor {HY}",calTitle:"Calendario de quemas",cmN:"Cuántos",cmA:"¿Fuera de lo normal?",
+calHow:"Cada fila es un año y cada cuadro un mes. Más rojo, más fuegos. Toca un cuadro para ver ese mes en el mapa.",
+calNote:"* Los años antes de 2012 son estimados desde MODIS (borde punteado).",sciPanel:"Para científicos: ajuste de este departamento y datos mensuales",csvBtn:"Copiar CSV mensual",
+csvNote:'Versión con servidor: <span class="mono">GET /export.csv</span>',
+foot:"Datos: NASA FIRMS (MODIS C6.1 y VIIRS 375 m, producto científico, confianza nominal y alta, fuegos de vegetación). Límites: geoBoundaries.",
+months:["enero","febrero","marzo","abril","mayo","junio","julio","agosto","setiembre","octubre","noviembre","diciembre"],
+mshort:["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Set","Oct","Nov","Dic"],
+allPeru:"Todo el Perú",lima:"Lima Metropolitana",wholeYear:"Todo el año",est:"estimado",
+costa:"Costa",sierra:"Sierra",selva:"Selva",costaSub:"Costa desértica, de Tumbes a Tacna",sierraSub:"Andes, de Cajamarca a Puno",selvaSub:"Amazonía: Loreto, Ucayali, San Martín, Madre de Dios",
+shareOf:"de los fuegos del Perú",
+costaDesc:"Pocos fuegos y repartidos en el año: quema de rastrojos en los valles.",
+sierraDesc:"El fuego sube en la época seca, de julio a octubre, cuando se queman pastos y chacras antes de las lluvias.",
+selvaDesc:"El fuego se concentra en agosto y setiembre, cuando se queman bosques talados y chacras.",
+clockRead:(m,v,s)=>`En un <b>${m}</b> típico, los satélites detectan unos <b>${v}</b> focos en el Perú${s}.`,
+peakNote:": el pico de la temporada",
+morphMsg:(p,j)=>p<15?`Satélites solo sumados: de 2011 a 2012 el conteo salta <b>×${j}</b>. Es un satélite nuevo, no más fuego.`:p>85?`Armonizada: el paso de 2011 a 2012 es solo <b>×${j}</b>. Los años antes de 2012 (puntos huecos) son estimados con su rango.`:`Convirtiendo… ${p}%`,
+yearsAxis:" mil",
+plain:(o)=>`En ${o.when}, <b>${o.zone}</b> tuvo cerca de <b>${o.v}</b> focos de calor${o.est?" (estimado desde MODIS)":""}. Es el <b>${o.pct}</b> de un ${o.month?"mes":"año"} típico: ${o.st}.${o.month?"":` El pico fue en ${o.peak}.`}`,
+stWord:{alto:"más de lo habitual",bajo:"menos de lo habitual",normal:"dentro de lo habitual"},stShort:{alto:"alto",bajo:"bajo",normal:"normal"},
+hsIn:w=>`Focos en ${w}`,range:"rango",viirsEq:"equivalente VIIRS",median:"típico",hsWord:"focos",
+src1:"MODIS ajustado",src2:"VIIRS",fitReg:"ajuste propio",fitNat:"ajuste nacional",fitAll:"un ajuste por departamento",snpp:"Suomi-NPP",n20:"NOAA-20 (S-NPP de respaldo)",
+mapHowDep:(w)=>`El color muestra fuegos por cada 1 000 km² en ${w}. Toca un departamento para elegirlo; tócalo otra vez para volver a todo el Perú.`,
+mapHowHeat:"Cada cuadro mide 0,25° (unos 28 km). Más intenso, más focos VIIRS en {HY}.",
+per1000:"focos por 1 000 km²",heatScale:"Focos VIIRS en {HY} por cuadro",calScaleN:"Focos por mes",
+calScaleA:'<span class="pill bajo">bajo</span> por debajo de lo habitual <span class="pill normal">normal</span> <span class="pill alto">alto</span> por encima de lo habitual (2003–2022)',
+tipCal:(o)=>`<b>${o.m} ${o.y}</b>${o.est?" · estimado":""}<br>${o.v} focos${o.r}<br>${o.m} típico: ${o.med}<br>${o.st}`,
+annual:"Total del año",
+sciHead:["Departamento","Ajuste","a","d","b","Temporada alta","Meses"],own:"propio",nat:"nacional",
+csvCopied:"CSV copiado",csvSelect:"Selecciona y copia el texto",
+loc:"es-PE"}
+};
+let LANG="en";
+try{const s=localStorage.getItem("lang");if(s==="es"||s==="en")LANG=s}catch(e){}
+const Y1=()=>Y0+NY-1;
+const sub=v=>typeof v==="string"?v.replace(/\{Y1\}/g,Y1()).replace(/\{NYR\}/g,NY).replace(/\{HY\}/g,HY):v;
+const T=k=>sub(TX[LANG][k]);
+const fmt=n=>Math.round(n).toLocaleString(T("loc"));
+const dec=(x,d)=>x.toLocaleString(T("loc"),{minimumFractionDigits:d,maximumFractionDigits:d});
+
+// ---------- data ----------
+const DEP=[];let HEAT=[];
+for(const line of $("data").textContent.trim().split("\n")){
+  if(line.startsWith("META;")){const m=line.split(";");NY=+m[1];N=NY*12;HY=+m[2];continue}
+  if(line.startsWith("HEAT;")){HEAT=line.slice(5).split(" ").map(s=>s.split(",").map(Number));continue}
+  const [id,name,m,v,vay,geo]=line.split(";");
+  DEP.push({id,raw:name,M:m.split(",").map(Number),V:v.split(",").map(Number),VAy:vay.split(",").map(Number),
+    rings:geo.split("|").map(r=>r.split(" ").map(p=>p.split(",").map(Number)))});
+}
+const ZONE_OF={costa:["PE-TUM","PE-PIU","PE-LAM","PE-LAL","PE-LIM","PE-CAL","PE-LMA","PE-ICA","PE-ARE","PE-MOQ","PE-TAC"],selva:["PE-LOR","PE-UCA","PE-SAM","PE-MDD"]};
+for(const d of DEP){d.zone=ZONE_OF.costa.includes(d.id)?"costa":ZONE_OF.selva.includes(d.id)?"selva":"sierra"}
+const dname=d=>d.id==="PE"?T("allPeru"):d.raw.startsWith("Municipalidad")?T("lima"):d.raw;
+for(const d of DEP){let A=0,sy=0,n=0;for(const r of d.rings){let s=0;for(let i=0;i<r.length;i++){const p=r[i],q=r[(i+1)%r.length];s+=p[0]*q[1]-q[0]*p[1];sy+=p[1];n++}A+=Math.abs(s)/2}
+  d.area=A*Math.pow(111.32/20,2)*Math.cos(sy/n/20*Math.PI/180)}
+
+// ---------- model ----------
+function solve3(A,b){const M=A.map((r,i)=>r.concat([b[i]]));for(let c=0;c<3;c++){let p=c;for(let r=c+1;r<3;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;[M[c],M[p]]=[M[p],M[c]];if(Math.abs(M[c][c])<1e-12)return null;for(let r=0;r<3;r++){if(r===c)continue;const f=M[r][c]/M[c][c];for(let k=c;k<4;k++)M[r][k]-=f*M[c][k]}}return [M[0][3]/M[0][0],M[1][3]/M[1][1],M[2][3]/M[2][2]]}
+function quant(a,q){const s=a.slice().sort((x,y)=>x-y);const i=(s.length-1)*q,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo)}
+function fit(rows){
+  const X=rows.map(r=>[1,r[2],Math.log1p(r[0])]),Y=rows.map(r=>Math.log1p(r[1]));let a,d,b;
+  if(new Set(rows.map(r=>r[2])).size<2){let sx=0,sy=0,sxx=0,sxy=0;const n=rows.length;for(let i=0;i<n;i++){sx+=X[i][2];sy+=Y[i];sxx+=X[i][2]*X[i][2];sxy+=X[i][2]*Y[i]}b=(n*sxy-sx*sy)/(n*sxx-sx*sx);a=(sy-b*sx)/n;d=0}
+  else{const A=[[0,0,0],[0,0,0],[0,0,0]],B=[0,0,0];for(let i=0;i<X.length;i++)for(let j=0;j<3;j++){B[j]+=X[i][j]*Y[i];for(let k=0;k<3;k++)A[j][k]+=X[i][j]*X[i][k]}[a,d,b]=solve3(A,B)}
+  const res=X.map((x,i)=>Y[i]-(a+d*x[1]+b*x[2]));
+  return {a,d,b,smear:res.reduce((s,r)=>s+Math.exp(r),0)/res.length,p10:quant(res,.1),p90:quant(res,.9),n:rows.length};
+}
+const pool=[];
+for(const d of DEP){
+  const mm=Array(12).fill(0);for(let y=2012;y<=2022;y++)for(let k=0;k<12;k++)mm[k]+=d.M[(y-Y0)*12+k]/11;
+  const avg=mm.reduce((s,x)=>s+x,0)/12;d.high=mm.map(x=>avg>0&&x>=avg?1:0);
+  d.rows=[];for(let t=VI+1;t<=(2022-Y0)*12+11;t++){const m=d.M[t],v=d.V[t-VI];if(m>0||v>0)d.rows.push([m,v,d.high[t%12]])}
+  pool.push(...d.rows);
+}
+const NAT=fit(pool);
+for(const d of DEP){
+  let p=null;if(d.rows.filter(r=>r[0]>0).length>=24){p=fit(d.rows);if(!(p.b>=0.5&&p.b<=1.3))p=null}
+  d.p=p||NAT;d.own=!!p;d.nMonths=d.rows.length;
+  d.H=new Float64Array(N);d.LO=new Float64Array(N);d.HI=new Float64Array(N);
+  for(let t=0;t<N;t++){
+    if(t<VI){const m=d.M[t];if(m>0){const lin=d.p.a+d.p.d*d.high[t%12]+d.p.b*Math.log1p(m);
+      d.H[t]=Math.max(d.p.smear*Math.exp(lin)-1,0);d.LO[t]=Math.max(Math.exp(lin+d.p.p10)-1,0);d.HI[t]=Math.max(Math.exp(lin+d.p.p90)-1,0)}}
+    else d.H[t]=d.LO[t]=d.HI[t]=d.V[t-VI];
+  }
+  d.rawY=Array.from({length:NY},(_,i)=>{let s=0;for(let k=0;k<12;k++)s+=d.M[i*12+k];if(Y0+i>=2012)s+=d.VAy[Y0+i-2012];return s});
+}
+function sumZone(id,list){const z={id,H:new Float64Array(N),LO:new Float64Array(N),HI:new Float64Array(N),rawY:Array(NY).fill(0)};
+  for(const d of list){for(let t=0;t<N;t++){z.H[t]+=d.H[t];z.LO[t]+=d.LO[t];z.HI[t]+=d.HI[t]}for(let i=0;i<NY;i++)z.rawY[i]+=d.rawY[i]}return z}
+const PE=sumZone("PE",DEP);
+const GROUP={costa:sumZone("costa",DEP.filter(d=>d.zone==="costa")),sierra:sumZone("sierra",DEP.filter(d=>d.zone==="sierra")),selva:sumZone("selva",DEP.filter(d=>d.zone==="selva"))};
+const ZONES={PE};for(const d of DEP)ZONES[d.id]=d;
+const annual=a=>Array.from({length:NY},(_,i)=>{let s=0;for(let k=0;k<12;k++)s+=a[i*12+k];return s});
+const clim=z=>{const o=[];for(let k=0;k<12;k++){const v=[];const nb=Math.min(20,NY);for(let y=0;y<nb;y++)v.push(z.H[y*12+k]);o.push({med:quant(v,.5),p25:quant(v,.25),p75:quant(v,.75),mean:v.reduce((s,x)=>s+x,0)/nb})}return o};
+const status=(v,c)=>v>c.p75&&v>0?"alto":v<c.p25?"bajo":"normal";
+let RATIO=0;(function(){let v=0,m=0;for(const d of DEP)for(let t=VI;t<=(2022-Y0)*12+11;t++){v+=d.V[t-VI];m+=d.M[t]}RATIO=v/m})();
+
+// ---------- tooltip ----------
+const tip=$("tip");
+function showTip(e,h){tip.innerHTML=h;tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(8,x)+"px";tip.style.top=Math.max(8,y)+"px"}
+function hideTip(){tip.hidden=true}
+
+// ---------- fire clock ----------
+function drawClock(host,z,opt){
+  host.innerHTML="";const c=clim(z).map(x=>x.mean);const mx=Math.max(...c)||1;
+  const S=opt.size,cx=S/2,cy=S/2,r0=S*0.17,r1=S/2-(opt.labels?26:6);
+  const svg=el("svg",{viewBox:`0 0 ${S} ${S}`,role:"img","aria-label":opt.aria||""},host);
+  for(const f of [0.5,1]){el("circle",{cx,cy,r:r0+(r1-r0)*f,fill:"none",stroke:"var(--line)","stroke-dasharray":f<1?"3 4":""},svg)}
+  const color=opt.color||"var(--crimson)";const ws=[];
+  c.forEach((v,k)=>{const a0=(k/12)*2*Math.PI-Math.PI/2+0.02,a1=((k+1)/12)*2*Math.PI-Math.PI/2-0.02;const r=r0+(r1-r0)*Math.sqrt(v/mx);
+    const p=`M${cx+r0*Math.cos(a0)},${cy+r0*Math.sin(a0)}L${cx+r*Math.cos(a0)},${cy+r*Math.sin(a0)}A${r},${r} 0 0 1 ${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)}L${cx+r0*Math.cos(a1)},${cy+r0*Math.sin(a1)}A${r0},${r0} 0 0 0 ${cx+r0*Math.cos(a0)},${cy+r0*Math.sin(a0)}Z`;
+    const w=el("path",{d:p,class:"wedge",fill:color,opacity:(0.35+0.65*Math.sqrt(v/mx)).toFixed(2),tabindex:opt.interactive?0:-1},svg);ws.push(w);
+    if(opt.labels){const am=(k+.5)/12*2*Math.PI-Math.PI/2;const t=el("text",{x:cx+(r1+14)*Math.cos(am),y:cy+(r1+14)*Math.sin(am)+4,"text-anchor":"middle","font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);t.textContent=T("mshort")[k]}
+    if(opt.onPick){const pick=()=>{ws.forEach(x=>x.classList.remove("on"));w.classList.add("on");opt.onPick(k,v,mx)};w.addEventListener("mouseenter",pick);w.addEventListener("focus",pick);w.addEventListener("click",pick)}
+  });
+  const tot=c.reduce((s,x)=>s+x,0);
+  if(opt.center){const t1=el("text",{x:cx,y:cy-2,"text-anchor":"middle","font-family":"Bricolage Grotesque, sans-serif","font-weight":800,"font-size":S*0.065,fill:"var(--ink)"},svg);t1.textContent=fmt(tot);
+    const t2=el("text",{x:cx,y:cy+S*0.05,"text-anchor":"middle","font-size":S*0.032,fill:"var(--muted)"},svg);t2.textContent=LANG==="es"?"focos al año":"hotspots / year"}
+  return {ws,c,mx};
+}
+function heroClock(){
+  const pk=c=>c.indexOf(Math.max(...c));
+  const r=drawClock($("clock-pe"),PE,{size:420,labels:true,center:true,interactive:true,aria:T("clockTitle"),onPick:(k,v,mx)=>{
+    $("clock-read").innerHTML=T("clockRead")(T("months")[k],fmt(v),v===mx?T("peakNote"):"")}});
+  const k=pk(r.c);r.ws[k].classList.add("on");$("clock-read").innerHTML=T("clockRead")(T("months")[k],fmt(r.c[k]),T("peakNote"));
+}
+
+// ---------- pixel illustration ----------
+function drawPixels(){
+  const s=$("pix");s.innerHTML="";const fire=[150,160];
+  const lab=(x,y,t,a)=>{const e=el("text",{x,y,"text-anchor":a||"middle","font-size":15,"font-weight":700,fill:"var(--ink)"},s);e.textContent=t};
+  // left: one big pixel
+  el("rect",{x:20,y:40,width:220,height:220,fill:"var(--soft)",stroke:"var(--muted)","stroke-width":2,rx:4},s);
+  el("rect",{x:20,y:40,width:220,height:220,fill:"var(--maize)",opacity:.22,rx:4},s);
+  el("circle",{cx:110,cy:170,r:9,fill:"var(--crimson)"},s);
+  lab(130,28,"MODIS · 1 km");
+  const t1=el("text",{x:130,y:290,"text-anchor":"middle","font-size":13,fill:"var(--muted)"},s);t1.textContent=LANG==="es"?"calor diluido: puede no detectarse":"heat diluted: may be missed";
+  // right: 3x3 grid (≈375 m)
+  const x0=280,y0=40,c=220/3;
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++){const on=(i===1&&j===2);el("rect",{x:x0+i*c,y:y0+j*c,width:c,height:c,fill:on?"var(--crimson)":"var(--soft)",opacity:on?0.85:1,stroke:"var(--muted)","stroke-width":1.5},s)}
+  el("circle",{cx:x0+90,cy:y0+130,r:9,fill:"var(--maize)"},s);
+  lab(390,28,"VIIRS · 375 m");
+  const t2=el("text",{x:390,y:290,"text-anchor":"middle","font-size":13,fill:"var(--muted)"},s);t2.textContent=LANG==="es"?"un cuadro se enciende: detectado":"one square lights up: detected";
+}
+
+// ---------- three regions ----------
+function drawRegions(){
+  const host=$("regions");host.innerHTML="";const tot=annual(PE.H).slice(0,Math.min(20,NY)).reduce((a,b)=>a+b,0);
+  for(const g of ["costa","sierra","selva"]){
+    if(!DEP.some(d=>d.zone===g))continue;
+    const z=GROUP[g],share=annual(z.H).slice(0,Math.min(20,NY)).reduce((a,b)=>a+b,0)/tot;
+    const col=`var(--${g})`;const card=document.createElement("article");card.className="region";card.style.setProperty("--c",col);
+    card.innerHTML=`<h3>${T(g)}</h3><div class="sub">${T(g+"Sub")}</div><div class="share num">${Math.round(share*100)}%</div><div class="sub">${T("shareOf")}</div><div class="clk"></div><p class="desc">${T(g+"Desc")}</p>`;
+    host.appendChild(card);
+    drawClock(card.querySelector(".clk"),z,{size:240,labels:true,color:col,aria:T(g)});
+  }
+}
+
+// ---------- slider morph ----------
+function niceStep(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+function drawMorph(){
+  const s=$("morph");s.innerHTML="";const W=1000,Hh=320,L=70,R=20,Tp=18,B=30;
+  const raw=PE.rawY,h=annual(PE.H),lo=annual(PE.LO),hi=annual(PE.HI);
+  const top=Math.max(...raw,...hi),st=niceStep(top/4),nT=Math.ceil(top/st),ymax=st*nT;
+  const x=i=>L+(W-L-R)*i/(NY-1),y=v=>Tp+(Hh-Tp-B)*(1-v/ymax);
+  const ax=el("g",{class:"axis"},s);
+  for(let k=0;k<=nT;k++){const v=st*k;el("line",{x1:L,x2:W-R,y1:y(v),y2:y(v)},ax);const t=el("text",{x:L-8,y:y(v)+4,"text-anchor":"end"},ax);t.textContent=v>=1000?Math.round(v/1000)+T("yearsAxis"):fmt(v)}
+  for(let i=0;i<NY;i+=2){const t=el("text",{x:x(i),y:Hh-8,"text-anchor":"middle"},ax);t.textContent=Y0+i}
+  for(const [yr,lb] of [[2012.05,"S-NPP"],[2018.25,"NOAA-20"]]){const xx=x(yr-Y0);el("line",{x1:xx,x2:xx,y1:Tp,y2:Hh-B,stroke:"var(--muted)","stroke-dasharray":"3 4"},s);const t=el("text",{x:xx+5,y:Tp+12,"font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},s);t.textContent="+ "+lb}
+  let band="";for(let i=0;i<NY;i++)band+=(i?"L":"M")+x(i)+","+y(hi[i]);for(let i=NY-1;i>=0;i--)band+="L"+x(i)+","+y(lo[i]);
+  const bandP=el("path",{d:band+"Z",fill:"var(--crimson)",opacity:0},s);
+  const ghost=el("path",{fill:"none",stroke:"var(--muted)","stroke-width":1.5,"stroke-dasharray":"5 5",opacity:0},s);
+  const line=el("path",{fill:"none","stroke-width":3.5,"stroke-linejoin":"round"},s);
+  const dots=[];for(let i=0;i<NY;i++)dots.push(el("circle",{r:4.5,"stroke-width":2},s));
+  ghost.setAttribute("d",raw.map((v,i)=>(i?"L":"M")+x(i)+","+y(v)).join(""));
+  function upd(){const p=+$("harm").value/100;
+    const vals=raw.map((r,i)=>r*(1-p)+h[i]*p);
+    line.setAttribute("d",vals.map((v,i)=>(i?"L":"M")+x(i)+","+y(v)).join(""));
+    const col=`color-mix(in oklab, var(--crimson) ${Math.round(p*100)}%, var(--muted))`;line.setAttribute("stroke",col);
+    dots.forEach((d,i)=>{d.setAttribute("cx",x(i));d.setAttribute("cy",y(vals[i]));const est=Y0+i<2012&&p>0.5;d.setAttribute("fill",est?"var(--surface)":col);d.setAttribute("stroke",col)});
+    bandP.setAttribute("opacity",(p*0.16).toFixed(3));ghost.setAttribute("opacity",(p*0.6).toFixed(2));
+    const i11=2011-Y0,j=vals[i11+1]/vals[i11];
+    $("morph-msg").innerHTML=T("morphMsg")(Math.round(p*100),dec(j,1));
+  }
+  $("harm").oninput=upd;upd();
+  const hit=el("rect",{x:L,y:Tp,width:W-L-R,height:Hh-Tp-B,fill:"transparent"},s);
+  hit.addEventListener("mousemove",e=>{const r=s.getBoundingClientRect();const px=(e.clientX-r.left)*W/r.width;const i=Math.max(0,Math.min(NY-1,Math.round((px-L)/(W-L-R)*(NY-1))));
+    showTip(e,`<b>${Y0+i}</b><br>${T("rawLab")}: ${fmt(raw[i])}<br>${T("harmLab")}: ${fmt(h[i])}${Y0+i<2012?`<br>${T("range")}: ${fmt(lo[i])}–${fmt(hi[i])}`:""}`)});
+  hit.addEventListener("mouseleave",hideTip);
+}
+
+// ---------- explorer ----------
+const S={zone:"PE",year:0,month:-1,mapMode:"dep",calMode:"n"};
+const VB="-1632 -2 264 372";
+const ringPath=r=>r.map((p,i)=>(i?"L":"M")+p[0]+","+(-p[1])).join("")+"Z";
+function periodValue(z){if(S.month>=0)return z.H[(S.year-Y0)*12+S.month];let s=0;for(let k=0;k<12;k++)s+=z.H[(S.year-Y0)*12+k];return s}
+const when=()=>S.month>=0?`${T("months")[S.month]} ${S.year}`:`${S.year}`;
+function fireFill(f){return f<=0?"var(--cell0)":f<0.5?`color-mix(in oklab, var(--maize) ${Math.round(15+f*170)}%, var(--cell0))`:`color-mix(in oklab, var(--crimson) ${Math.round((f-0.5)*200)}%, var(--maize))`}
+function drawMap(){
+  const host=$("map");host.innerHTML="";const svg=el("svg",{viewBox:VB,role:"img","aria-label":T("mapTitle")},host);const g=el("g",{},svg);
+  if(S.mapMode==="dep"){
+    const dens=DEP.map(d=>periodValue(d)/d.area*1000);const mx=Math.max(...dens.filter((_,i)=>DEP[i].area>300))||1;
+    DEP.forEach((d,i)=>{const p=el("path",{d:d.rings.map(ringPath).join(""),class:"dep"+(S.zone===d.id?" sel":""),tabindex:0,"aria-label":dname(d)},g);
+      p.style.fill=fireFill(Math.min(1,Math.sqrt(dens[i]/mx)));
+      p.addEventListener("mousemove",e=>showTip(e,`<b>${dname(d)}</b><br>${fmt(periodValue(d))} ${T("hsWord")}${S.year<2012?" ("+T("est")+")":""}<br>${dec(dens[i],1)} ${T("per1000")}`));
+      p.addEventListener("mouseleave",hideTip);
+      const go=()=>setZone(S.zone===d.id?"PE":d.id);p.addEventListener("click",go);p.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+    $("map-scale").innerHTML=`<span>${T("per1000")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.1)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">0 – ${fmt(mx)}</span>`;
+    $("map-howto").textContent=T("mapHowDep")(when());
+  }else{
+    DEP.forEach(d=>el("path",{d:d.rings.map(ringPath).join(""),fill:"var(--cell0)",stroke:"var(--surface)","stroke-width":1,"vector-effect":"non-scaling-stroke"},g));
+    const mx=Math.max(...HEAT.map(h=>h[2]));const hg=el("g",{},svg);
+    for(const [xi,yi,c] of HEAT){const f=Math.log1p(c)/Math.log1p(mx);
+      const r=el("rect",{x:-1630+xi*5,y:370-(yi+1)*5,width:5,height:5,fill:fireFill(Math.max(.12,f))},hg);
+      r.addEventListener("mousemove",e=>showTip(e,`<b>${fmt(c)} ${T("hsWord")}</b> · ${HY}<br>${dec(-81.5+xi/4+0.125,2)}°, ${dec(-18.5+yi/4+0.125,2)}°`));r.addEventListener("mouseleave",hideTip)}
+    if(S.zone!=="PE"){const d=ZONES[S.zone];el("path",{d:d.rings.map(ringPath).join(""),fill:"none",stroke:"var(--ink)","stroke-width":2.4,"vector-effect":"non-scaling-stroke"},svg)}
+    $("map-scale").innerHTML=`<span>${T("heatScale")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.12)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">3 – ${fmt(mx)}</span>`;
+    $("map-howto").textContent=T("mapHowHeat");
+  }
+}
+function drawCal(){
+  const z=ZONES[S.zone],cl=clim(z),host=$("cal");host.innerHTML="";
+  const cw=34,ch=17,gap=2,L=48,Tp=22,barW=110,W=L+12*(cw+gap)+16+barW,Hh=Tp+NY*(ch+gap)+6;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${Hh}`,role:"img","aria-label":T("calTitle")},host);const ax=el("g",{class:"axis"},svg);
+  T("mshort").forEach((m,k)=>{const t=el("text",{x:L+k*(cw+gap)+cw/2,y:14,"text-anchor":"middle"},ax);t.textContent=m});
+  const th=el("text",{x:L+12*(cw+gap)+16,y:14},ax);th.textContent=T("annual");
+  let mx=0;for(let t=0;t<N;t++)mx=Math.max(mx,z.H[t]);const yT=annual(z.H),yM=Math.max(...yT);
+  for(let i=0;i<NY;i++){const yr=Y0+i,est=yr<2012,yy=Tp+i*(ch+gap);
+    const lb=el("text",{x:L-8,y:yy+ch-4,"text-anchor":"end","font-weight":yr===S.year?"700":"400"},ax);lb.textContent=yr+(est?"*":"");if(yr===S.year)lb.setAttribute("fill","var(--ink)");
+    for(let k=0;k<12;k++){const t=i*12+k,v=z.H[t],c=cl[k],st=status(v,c);let fill;
+      if(S.calMode==="n")fill=fireFill(mx>0?Math.sqrt(v/mx):0);
+      else{const r=c.med>0?v/c.med:(v>0?3:1);fill=st==="alto"?`color-mix(in oklab, var(--crimson) ${Math.round(Math.min(100,35+Math.log2(r)*30))}%, var(--cell0))`:st==="bajo"?`color-mix(in oklab, var(--costa) ${Math.round(Math.min(100,30+(1-r)*60))}%, var(--cell0))`:"var(--cell0)"}
+      const selm=yr===S.year&&S.month===k;
+      const rc=el("rect",{x:L+k*(cw+gap),y:yy,width:cw,height:ch,rx:3,class:"cal-cell",fill,stroke:selm?"var(--ink)":est?"var(--muted)":"none","stroke-width":selm?2:est?0.8:0,"stroke-dasharray":est&&!selm?"2 2":""},svg);
+      rc.addEventListener("mousemove",e=>showTip(e,T("tipCal")({m:T("months")[k],y:yr,est,v:fmt(v),r:est?` (${T("range")} ${fmt(z.LO[t])}–${fmt(z.HI[t])})`:"",med:fmt(c.med),st:T("stShort")[st]})));
+      rc.addEventListener("mouseleave",hideTip);
+      rc.addEventListener("click",()=>{S.year=yr;S.month=k;syncControls();renderEx()});
+    }
+    el("rect",{x:L+12*(cw+gap)+16,y:yy+3,width:Math.max(1,yM>0?barW*yT[i]/yM:0),height:ch-6,rx:2,fill:est?"var(--muted)":"var(--crimson)",opacity:est?0.5:0.85},svg);
+  }
+  $("cal-scale").innerHTML=S.calMode==="n"?`<span>${T("calScaleN")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.1)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">0 – ${fmt(mx)}</span>`:T("calScaleA");
+}
+function drawTiles(){
+  const z=ZONES[S.zone],cl=clim(z),yi=S.year-Y0,est=S.year<2012;let v=0,lo=0,hi=0,normal,st;
+  if(S.month>=0){const t=yi*12+S.month;v=z.H[t];lo=z.LO[t];hi=z.HI[t];normal=cl[S.month].med;st=status(v,cl[S.month])}
+  else{for(let k=0;k<12;k++){v+=z.H[yi*12+k];lo+=z.LO[yi*12+k];hi+=z.HI[yi*12+k]}const yt=annual(z.H).slice(0,Math.min(20,NY));normal=quant(yt,.5);st=v>quant(yt,.75)?"alto":v<quant(yt,.25)?"bajo":"normal"}
+  let pk=0,pv=-1;for(let k=0;k<12;k++){const x=z.H[yi*12+k];if(x>pv){pv=x;pk=k}}
+  $("t1-l").textContent=T("hsIn")(when());$("t1").textContent=fmt(v);$("t1-s").textContent=est?`${T("range")} ${fmt(lo)}–${fmt(hi)}`:T("viirsEq");
+  const pct=normal>0?Math.round(v/normal*100)+"%":"–";
+  $("t2").textContent=pct;$("t2-s").innerHTML=`<span class="pill ${st}">${T("stShort")[st]}</span> ${T("median")}: ${fmt(normal)}`;
+  $("t3").textContent=T("mshort")[pk];$("t3-s").textContent=`${fmt(pv)} · ${S.year}`;
+  $("t4").textContent=est?T("src1"):T("src2");
+  $("t4-s").textContent=est?(S.zone==="PE"?T("fitAll"):(z.own?T("fitReg"):T("fitNat"))):(S.year>=2018?T("n20"):T("snpp"));
+  $("plain").innerHTML=T("plain")({when:when(),zone:dname(z),v:fmt(v),est,pct,month:S.month>=0,st:T("stWord")[st],peak:T("months")[pk]});
+}
+function drawSci(){
+  const list=S.zone==="PE"?DEP:[ZONES[S.zone]];const h=T("sciHead");
+  const rows=list.map(d=>`<tr><td>${dname(d)}</td><td>${d.own?T("own"):T("nat")}</td><td class="n">${dec(d.p.a,2)}</td><td class="n">${dec(d.p.d,2)}</td><td class="n">${dec(d.p.b,2)}</td><td>${d.high.map((x,k)=>x?T("mshort")[k]:"").filter(Boolean).join(" ")||"–"}</td><td class="n">${d.nMonths}</td></tr>`).join("");
+  $("sci-body").innerHTML=`<div class="scroll"><table class="params"><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows}<tr><td><i>${T("nat")}</i></td><td></td><td class="n">${dec(NAT.a,2)}</td><td class="n">${dec(NAT.d,2)}</td><td class="n">${dec(NAT.b,2)}</td><td></td><td class="n">${NAT.n}</td></tr></tbody></table></div>`;
+}
+function syncControls(){$("sel-dep").value=S.zone;$("sel-year").value=S.year;$("sel-month").value=S.month;$("d-title").textContent=dname(ZONES[S.zone])}
+function setZone(id){S.zone=id;syncControls();renderEx()}
+function renderEx(){drawTiles();drawMap();drawCal();drawSci();$("csv-box").hidden=true}
+function fillSelects(){
+  const sd=$("sel-dep");sd.innerHTML="";sd.add(new Option(T("allPeru"),"PE"));DEP.slice().sort((a,b)=>dname(a).localeCompare(dname(b),"es")).forEach(d=>sd.add(new Option(dname(d),d.id)));
+  const sy=$("sel-year");sy.innerHTML="";for(let y=Y1();y>=Y0;y--)sy.add(new Option(y+(y<2012?" ("+T("est")+")":""),y));
+  const sm=$("sel-month");sm.innerHTML="";sm.add(new Option(T("wholeYear"),-1));T("months").forEach((m,k)=>sm.add(new Option(m[0].toUpperCase()+m.slice(1),k)));
+  syncControls();
+}
+$("sel-dep").addEventListener("change",e=>setZone(e.target.value));
+$("sel-year").addEventListener("change",e=>{S.year=+e.target.value;renderEx()});
+$("sel-month").addEventListener("change",e=>{S.month=+e.target.value;renderEx()});
+const seg=(a,b,key,va,vb,fn)=>{$(a).onclick=()=>{S[key]=va;$(a).setAttribute("aria-pressed",true);$(b).setAttribute("aria-pressed",false);fn()};$(b).onclick=()=>{S[key]=vb;$(b).setAttribute("aria-pressed",true);$(a).setAttribute("aria-pressed",false);fn()}};
+seg("mm-dep","mm-heat","mapMode","dep","heat",drawMap);seg("cm-n","cm-a","calMode","n","a",drawCal);
+$("btn-csv").onclick=()=>{const z=ZONES[S.zone];let csv="region_id,month,hotspots_harmonized,range_p10,range_p90,source\n";
+  for(let t=0;t<N;t++){csv+=`${z.id},${Y0+Math.floor(t/12)}-${String(t%12+1).padStart(2,"0")},${z.H[t].toFixed(1)},${z.LO[t].toFixed(1)},${z.HI[t].toFixed(1)},${t<VI?"MODIS_ADJ":"VIIRS"}\n`}
+  const box=$("csv-box"),btn=$("btn-csv");box.value=csv;box.hidden=false;
+  const done=ok=>{btn.textContent=ok?T("csvCopied"):T("csvSelect");setTimeout(()=>btn.textContent=T("csvBtn"),2200)};
+  try{navigator.clipboard.writeText(csv).then(()=>done(true),()=>{box.select();done(false)})}catch(e){box.select();done(false)}};
+
+// ---------- language + routes ----------
+function applyLang(){
+  document.documentElement.lang=LANG;document.title=T("brand");
+  document.querySelectorAll("[data-t]").forEach(n=>{const v=T(n.dataset.t);if(typeof v==="string")n.textContent=v});
+  document.querySelectorAll("[data-th]").forEach(n=>{n.innerHTML=T(n.dataset.th)});
+  $("lang-en").setAttribute("aria-pressed",LANG==="en");$("lang-es").setAttribute("aria-pressed",LANG==="es");
+  $("ratio").textContent="×"+dec(RATIO,1);$("n-reg").textContent=DEP.length;
+  heroClock();drawPixels();drawRegions();drawMorph();fillSelects();
+  if(!$("view-explore").hidden)renderEx();
+}
+function setLang(l){LANG=l;try{localStorage.setItem("lang",l)}catch(e){}applyLang()}
+$("lang-en").onclick=()=>setLang("en");$("lang-es").onclick=()=>setLang("es");
+function route(){
+  const h=location.hash.slice(1);const ex=h==="explore";
+  $("view-story").hidden=ex;$("view-explore").hidden=!ex;
+  document.querySelectorAll(".nav a").forEach(a=>{const r=a.getAttribute("href").slice(1);const on=ex?r==="explore":(r==="home"&&h!=="method")||(r==="method"&&h==="method");if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  if(ex){renderEx();scrollTo(0,0)}else if(h==="method")$("method").scrollIntoView();else scrollTo(0,0);
+}
+addEventListener("hashchange",route);
+S.year=HY;applyLang();route();
+})();
+</script>

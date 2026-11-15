@@ -1,0 +1,27 @@
+# Actualización diaria: baja NRT de los últimos 3 días, armoniza y carga solo esa ventana.
+# Requiere los secretos FIRMS_MAP_KEY y DATABASE_URL en Settings > Secrets > Actions.
+name: actualizar-hotspots
+on:
+  schedule: [{ cron: "15 11 * * *" }]   # 06:15 hora de Perú
+  workflow_dispatch: {}
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      # La calibración congelada (data/processed/calibration_factors.csv) viene en el repositorio,
+      # así que el runner solo necesita bajar los últimos días.
+      - name: Descargar, armonizar y cargar
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd pipeline
+          SINCE=$(date -u -d '3 days ago' +%F)
+          python download_firms.py api --start $SINCE --mode nrt
+          python download_regions.py
+          python harmonize.py
+          python load_postgis.py --since $SINCE

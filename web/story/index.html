@@ -1,0 +1,785 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fire Calendar of Peru</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a story page (hero with fire clock, sensors, three Perus, method) and an explorer view; woven textile bands divide sections */
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --ink:#211A1F; --muted:#5E555B; --line:#DDD5D0;
+  --crimson:#A3203A; --maize:#E2A52B; --selva:#1E6B52; --costa:#2B5E8C; --sierra:#B26B1F;
+  --cell0:#ECE6E1; --soft:#F1E7E3;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17121A; --surface:#211A25; --ink:#F3EDEA; --muted:#B3A8AE; --line:#3A3040;
+  --crimson:#EC5B75; --maize:#F2C14F; --selva:#4FB38D; --costa:#72A8DE; --sierra:#E19A4C;
+  --cell0:#2C2431; --soft:#2A1F28; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17121A; --surface:#211A25; --ink:#F3EDEA; --muted:#B3A8AE; --line:#3A3040;
+  --crimson:#EC5B75; --maize:#F2C14F; --selva:#4FB38D; --costa:#72A8DE; --sierra:#E19A4C;
+  --cell0:#2C2431; --soft:#2A1F28; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--maize);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.08}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+.kicker{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--crimson)}
+.muted{color:var(--muted)}
+
+/* textile band: rombos escalonados, drawn with a mask so it follows the theme */
+.weave{height:22px;background:
+  linear-gradient(90deg,var(--crimson) 0 25%,var(--maize) 25% 50%,var(--selva) 50% 75%,var(--costa) 75% 100%);background-size:176px 22px;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22'%3E%3Cpath d='M22 0h4v4h4v4h4v4h-4v4h-4v4h-4v-4h-4v-4h-4v-4h4V4h4zM0 9h4v4H0zM40 9h4v4h-4z' fill='%23000'/%3E%3Cpath d='M20 9h4v4h-4z' fill='%23000' fill-opacity='0'/%3E%3C/svg%3E") repeat-x;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22'%3E%3Cpath d='M22 0h4v4h4v4h4v4h-4v4h-4v4h-4v-4h-4v-4h-4v-4h4V4h4zM0 9h4v4H0zM40 9h4v4h-4z' fill='%23000'/%3E%3C/svg%3E") repeat-x;opacity:.9}
+.weave.thin{height:12px;-webkit-mask-size:24px 12px;mask-size:24px 12px;background-size:96px 12px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:color-mix(in oklab,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-display);font-weight:800;font-size:20px}
+.brand small{font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--muted);display:block;line-height:1}
+.nav{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav a{text-decoration:none;padding:7px 13px;border-radius:999px;font-size:15px;color:var(--muted)}
+.nav a:hover{color:var(--ink);background:var(--soft)}
+.nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:6px}
+.lang button{border:0;background:transparent;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--crimson);color:#fff}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-block:48px 40px}
+.hero h1{font-size:clamp(38px,5.4vw,68px);font-weight:800;letter-spacing:-.02em}
+.hero h1 .fire{color:var(--crimson)}
+.hero .lead{font-size:19px;color:var(--muted);max-width:50ch;margin:18px 0 26px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700;border:2px solid var(--ink);background:transparent;cursor:pointer}
+.btn.primary{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.btn:hover{transform:translateY(-1px)}
+.clock-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px;position:relative}
+.clock-card h2{font-size:18px;font-weight:700}
+.clock-card .hint{font-size:14px;color:var(--muted)}
+.clock svg{width:100%;height:auto;display:block;max-width:420px;margin:0 auto}
+.wedge{cursor:pointer;transition:opacity .2s}
+.wedge:hover,.wedge.on{opacity:1!important;stroke:var(--ink);stroke-width:1.5}
+.clock-read{min-height:3.2em;text-align:center;font-size:16px}
+.clock-read b{color:var(--crimson)}
+
+/* sections */
+section.story{padding-block:56px}
+.sec-head{max-width:720px;margin-bottom:28px}
+.sec-head h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;margin:8px 0 12px}
+.sec-head p{color:var(--muted);font-size:18px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.pixels{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.pixels svg{width:100%;height:auto;display:block}
+.facts{display:grid;gap:16px}
+.fact{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;align-items:start}
+.fact .big{white-space:nowrap;font-family:var(--f-display);font-weight:800;font-size:26px;color:var(--crimson);line-height:1}
+.fact h3{font-size:19px;margin-bottom:4px}
+.fact p{color:var(--muted)}
+.regions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.region{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;border-top:6px solid var(--c)}
+.region h3{font-size:24px;font-weight:800}
+.region .sub{font-size:14px;color:var(--muted)}
+.region .share{font-family:var(--f-display);font-weight:800;font-size:34px;color:var(--c);line-height:1;margin-top:10px}
+.region p.desc{font-size:15px;color:var(--muted);margin-top:8px}
+.region svg{width:100%;max-width:230px;height:auto;display:block;margin:6px auto 0}
+.morph{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.morph svg{width:100%;height:auto;display:block}
+.slider-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.slider-row input[type=range]{flex:1;min-width:180px;accent-color:var(--crimson);height:28px}
+.slider-row .lab{font-weight:700;font-size:15px;min-width:0}
+.morph-msg{margin-top:10px;font-size:17px;min-height:3.2em}
+details.sci{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+details.sci summary{cursor:pointer;font-weight:700}
+details.sci .formula{font-family:var(--f-mono);font-size:14px;overflow-x:auto;white-space:nowrap;padding:10px 0}
+details.sci ul{margin:6px 0 0;padding-left:20px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.metric{border-left:4px solid var(--maize);padding-left:14px}
+.metric .v{font-family:var(--f-display);font-weight:800;font-size:42px;line-height:1.05}
+.metric .l{color:var(--muted);font-size:15px}
+.team{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.card h3{font-size:21px;margin:6px 0 8px}
+.card p{color:var(--muted);margin-bottom:8px}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:12px;padding:3px 10px;border-radius:999px;background:var(--soft);margin:0 6px 6px 0}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer .wrap{padding-block:22px;display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}
+
+/* explorer */
+.ex-head{display:flex;gap:16px;align-items:end;justify-content:space-between;flex-wrap:wrap;padding-block:26px 14px}
+.ex-head h1{font-size:clamp(28px,3.6vw,40px);font-weight:800}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:700}
+.field select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:400;color:var(--ink);max-width:100%}
+.plain{background:var(--soft);border-radius:16px;padding:16px 20px;font-size:19px;margin-bottom:16px;border-left:6px solid var(--crimson)}
+.plain b{color:var(--crimson)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.tile .l{font-size:13px;color:var(--muted);font-weight:700}
+.tile .v{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1.15}
+.tile .s{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.pill.alto{background:color-mix(in oklab,var(--crimson) 18%,var(--surface));color:var(--crimson)}
+.pill.bajo{background:color-mix(in oklab,var(--costa) 18%,var(--surface));color:var(--costa)}
+.pill.normal{background:var(--cell0);color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:16px;margin-bottom:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.panel-h{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.panel-h h2{font-size:20px;font-weight:800}
+.howto{font-size:14px;color:var(--muted);margin-bottom:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:7px 13px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+#map svg{width:100%;height:auto;display:block;max-height:640px}
+.dep{stroke:var(--surface);stroke-width:1.2;cursor:pointer;vector-effect:non-scaling-stroke}
+.dep:hover{stroke:var(--ink)}
+.dep.sel{stroke:var(--ink);stroke-width:2.6}
+.scroll{overflow-x:auto}
+#cal svg{display:block;min-width:620px;width:100%;height:auto}
+.cal-cell{cursor:pointer}
+.cal-cell:hover{stroke:var(--ink);stroke-width:1.5}
+.scale{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap;margin-top:6px}
+.scale .bar{height:10px;width:140px;border-radius:5px}
+.note{font-size:13px;color:var(--muted);margin-top:6px}
+.axis text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.axis line{stroke:var(--line)}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:14px;padding:8px 10px;border-radius:8px;max-width:260px;line-height:1.4}
+table.params{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+table.params th,table.params td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.params td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.csv-box{width:100%;height:120px;font-family:var(--f-mono);font-size:12px;margin-top:8px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+
+@media (max-width:920px){
+  .hero,.two{grid-template-columns:minmax(0,1fr);gap:26px}
+  .hero{padding-block:30px}
+  .regions{grid-template-columns:minmax(0,1fr)}
+  .metrics,.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .team,.grid2{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="Home">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="var(--crimson)"/><path d="M17 5h3v3h3v3h3v3h-3v3h-3v3h-3v-3h-3v-3h-3v-3h3V8h3z" fill="var(--maize)"/><path d="M17 15c1.6 2.4 4 3.4 4 6.6a4 4 0 0 1-8 0c0-1.6.8-2.6 1.7-3.3.1 1.2.6 1.9 1.3 2.2.2-2-.2-3.8 1-5.5Z" fill="#fff"/></svg>
+      <span><span data-t="brand">Fire Calendar of Peru</span><small data-t="brandSub">MODIS + VIIRS · 2003–{Y1}</small></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#home" data-t="navStory">The story</a>
+      <a href="#method" data-t="navMethod">Method</a>
+      <a href="#explore" data-t="navExplore">Explore the data</a>
+      <span class="lang" role="group" aria-label="Language / Idioma"><button id="lang-en" aria-pressed="true">EN</button><button id="lang-es" aria-pressed="false">ES</button></span>
+    </nav>
+  </div>
+</header>
+
+<main id="view-story">
+  <div class="wrap hero" id="home">
+    <div>
+      <div class="kicker" data-t="kicker">NASA Space Apps 2026 · Peru</div>
+      <h1 style="margin-top:12px" data-th="heroTitle">Every year, Peru has a <span class="fire">fire season</span>. Now we can see {NYR} years of it.</h1>
+      <p class="lead" data-t="heroLead">Satellites spot fires from space, but the old and the new satellites count them differently. We joined them into one fair record, region by region, so anyone can see when and where Peru burns.</p>
+      <div class="cta">
+        <a class="btn primary" href="#explore" data-t="ctaExplore">Explore your region →</a>
+        <a class="btn" href="#method" data-t="ctaHow">How we did it</a>
+      </div>
+    </div>
+    <div class="clock-card">
+      <h2 data-t="clockTitle">Peru's fire clock</h2>
+      <p class="hint" data-t="clockHint">Each slice is a month. The longer the slice, the more fires in a typical year. Hover or tap a month.</p>
+      <div class="clock" id="clock-pe"></div>
+      <p class="clock-read" id="clock-read" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="weave" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap two">
+      <div>
+        <div class="kicker" data-t="k1">1 · How satellites see fire</div>
+        <div class="sec-head" style="margin-top:8px">
+          <h2 data-t="s1Title">Two eyes in the sky, with different eyesight</h2>
+          <p data-t="s1Lead">A “hotspot” is a spot on the ground that the satellite sees as much hotter than its surroundings, usually a fire. MODIS has watched since 2000. VIIRS joined in 2012 with a sharper view.</p>
+        </div>
+        <div class="facts">
+          <div class="fact"><div class="big">1 km</div><div><h3 data-t="f1t">MODIS sees in large squares</h3><p data-t="f1p">A small farm burn can get lost inside a 1 km square.</p></div></div>
+          <div class="fact"><div class="big">375 m</div><div><h3 data-t="f2t">VIIRS sees in small squares</h3><p data-t="f2p">The same small fire fills more of its square, so it gets detected.</p></div></div>
+          <div class="fact"><div class="big num" id="ratio">×4.8</div><div><h3 data-t="f3t">So VIIRS counts more fires</h3><p data-t="f3p">Over Peru, VIIRS finds almost five times as many hotspots as MODIS. Comparing them directly would be unfair.</p></div></div>
+        </div>
+      </div>
+      <figure class="pixels" style="margin:0">
+        <svg viewBox="0 0 520 300" role="img" aria-label="One 1 km pixel compared with 375 m pixels over the same small fire" id="pix"></svg>
+        <figcaption class="muted" style="font-size:14px;margin-top:6px" data-t="pixCap">Same field, same small fire. In the 1 km view the heat is diluted; in the 375 m view one square lights up.</figcaption>
+      </figure>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap">
+      <div class="kicker" data-t="k2">2 · One country, three worlds</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s2Title">Coast, Andes and Amazon burn at different times</h2>
+        <p data-t="s2Lead">Peru's climates are so different that one conversion for the whole country is not enough. Each region gets its own adjustment, with its own fire season.</p>
+      </div>
+      <div class="regions" id="regions"></div>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story" id="method">
+    <div class="wrap">
+      <div class="kicker" data-t="k3">3 · Making one record</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s3Title">Slide to harmonize</h2>
+        <p data-t="s3Lead">If we simply add up all satellites, fire seems to explode in 2012 and again in 2018. Those jumps are new satellites arriving, not more fire. Move the slider to convert everything to one VIIRS scale.</p>
+      </div>
+      <div class="morph">
+        <svg viewBox="0 0 1000 320" id="morph" role="img" aria-label="Hotspots per year in Peru"></svg>
+        <div class="slider-row">
+          <span class="lab" data-t="rawLab">Satellites added up</span>
+          <input type="range" id="harm" min="0" max="100" value="100" aria-label="Harmonization">
+          <span class="lab" style="color:var(--crimson)" data-t="harmLab">Harmonized</span>
+        </div>
+        <p class="morph-msg" id="morph-msg" aria-live="polite"></p>
+      </div>
+      <details class="sci">
+        <summary data-t="sciTitle">For scientists: the model</summary>
+        <div class="formula">log(VIIRS + 1) = a + d · high_season + b · log(MODIS + 1)</div>
+        <ul>
+          <li data-t="sci1">Fit per region on monthly counts, 2012–2022 (both sensors active). Regions with fewer than 24 fire months use the national fit.</li>
+          <li data-t="sci2">high_season = months whose average count is above the region's own monthly average.</li>
+          <li data-t="sci3">Back-transform with Duan smearing; p10–p90 of residuals gives the range shown for pre-2012 estimates.</li>
+          <li data-t="sci4">From 2012: one VIIRS satellite per day (NOAA-20 from April 2018, S-NPP before). Vegetation fires, nominal and high confidence.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+  <div class="weave thin" aria-hidden="true"></div>
+
+  <section class="story">
+    <div class="wrap">
+      <div class="kicker" data-t="k4">4 · Does it work?</div>
+      <div class="sec-head" style="margin-top:8px">
+        <h2 data-t="s4Title">Tested on years the model never saw</h2>
+        <p data-t="s4Lead">We trained on 2012–2019 and checked 2020–2022 against real VIIRS counts.</p>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="v num" data-t="m1v">0.98</div><div class="l" data-t="m1">R² for Peru's monthly total</div></div>
+        <div class="metric"><div class="v num">±11%</div><div class="l" data-t="m2">typical monthly error for all of Peru</div></div>
+        <div class="metric"><div class="v num">78%</div><div class="l" data-t="m3">of real months fall inside our range</div></div>
+        <div class="metric"><div class="v num" id="n-reg">26</div><div class="l" data-t="m4">regions with a 2003–{Y1} record</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story" style="padding-top:0">
+    <div class="wrap team">
+      <div class="card">
+        <div class="kicker" data-t="chTitle">The challenge</div>
+        <h3>Harmonization of MODIS and VIIRS Hot Spots</h3>
+        <p data-t="chText">Proposed by CONAE (Argentina) for NASA Space Apps Challenge 2026: build one continuous hotspot record from both sensors.</p>
+        <div><span class="chip">NASA FIRMS</span><span class="chip">MODIS C6.1</span><span class="chip">VIIRS 375 m</span><span class="chip">H3</span><span class="chip">PostGIS</span><span class="chip">FastAPI</span></div>
+      </div>
+      <div class="card">
+        <div class="kicker" data-t="tmTitle">The team</div>
+        <h3 data-t="tmName">Team name</h3>
+        <p data-t="tmText">Lima, Peru. Replace this text with team members and roles.</p>
+        <p data-t="tmNext">Next steps: provinces and districts, land cover (crop vs. forest), and finer seasonality.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main id="view-explore" hidden>
+  <div class="weave thin" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="ex-head">
+      <div>
+        <div class="kicker" data-t="exKicker">Explore the data · FIRMS 2003–{Y1}</div>
+        <h1 id="d-title">All of Peru</h1>
+      </div>
+      <div class="controls">
+        <label class="field" for="sel-dep"><span data-t="lblArea">Region</span><select id="sel-dep"></select></label>
+        <label class="field" for="sel-year"><span data-t="lblYear">Year</span><select id="sel-year"></select></label>
+        <label class="field" for="sel-month"><span data-t="lblMonth">Month</span><select id="sel-month"></select></label>
+      </div>
+    </div>
+
+    <p class="plain" id="plain" aria-live="polite"></p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l" id="t1-l"></div><div class="v num" id="t1"></div><div class="s num" id="t1-s"></div></div>
+      <div class="tile"><div class="l" data-t="t2l">Compared with a typical year</div><div class="v num" id="t2"></div><div class="s" id="t2-s"></div></div>
+      <div class="tile"><div class="l" data-t="t3l">Peak month</div><div class="v" id="t3"></div><div class="s num" id="t3-s"></div></div>
+      <div class="tile"><div class="l" data-t="t4l">Where the number comes from</div><div class="v" id="t4"></div><div class="s" id="t4-s"></div></div>
+    </div>
+
+    <div class="grid2">
+      <section class="panel" aria-labelledby="map-h">
+        <div class="panel-h">
+          <h2 id="map-h" data-t="mapTitle">Map</h2>
+          <div class="seg" role="group" aria-label="Map type">
+            <button id="mm-dep" aria-pressed="true" data-t="mmDep">Regions</button>
+            <button id="mm-heat" aria-pressed="false" data-t="mmHeat">Heat {HY}</button>
+          </div>
+        </div>
+        <p class="howto" id="map-howto"></p>
+        <div id="map"></div>
+        <div class="scale" id="map-scale"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="cal-h">
+        <div class="panel-h">
+          <h2 id="cal-h" data-t="calTitle">Burning calendar</h2>
+          <div class="seg" role="group" aria-label="Calendar mode">
+            <button id="cm-n" aria-pressed="true" data-t="cmN">How many</button>
+            <button id="cm-a" aria-pressed="false" data-t="cmA">Unusual?</button>
+          </div>
+        </div>
+        <p class="howto" data-t="calHow">Each row is a year, each square a month. Darker red means more fires. Tap a square to see that month on the map.</p>
+        <div class="scroll" id="cal"></div>
+        <div class="scale" id="cal-scale"></div>
+        <p class="note" data-t="calNote">* Years before 2012 are estimated from MODIS (dotted border).</p>
+      </section>
+    </div>
+
+    <details class="sci" style="margin-bottom:16px">
+      <summary data-t="sciPanel">For scientists: fit for this region and monthly data</summary>
+      <div id="sci-body"></div>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn" id="btn-csv" type="button" style="padding:8px 16px" data-t="csvBtn">Copy monthly CSV</button>
+        <span class="note" data-th="csvNote">Server version: <span class="mono">GET /export.csv</span></span>
+      </div>
+      <textarea id="csv-box" class="csv-box" hidden readonly aria-label="CSV"></textarea>
+    </details>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-t="foot">Data: NASA FIRMS (MODIS C6.1 and VIIRS 375 m, standard product, nominal and high confidence, vegetation fires). Boundaries: geoBoundaries.</span>
+    <span>Space Apps 2026 · Lima</span>
+  </div>
+</footer>
+<div id="tip" hidden></div>
+
+<script type="text/plain" id="data">
+META;24;2025
+PE-PUN;Puno;4,0,0,0,1,35,47,59,50,43,33,4,0,0,1,1,5,13,10,22,12,20,5,1,1,0,0,1,15,18,138,171,45,2,4,0,0,0,0,0,20,7,59,36,34,10,1,1,0,1,0,0,1,5,14,38,30,30,15,0,0,2,0,1,8,23,33,73,41,19,2,4,2,0,0,1,2,10,12,41,54,17,7,0,0,0,0,0,3,16,55,153,174,24,38,6,0,1,0,0,3,15,17,24,18,23,24,4,0,0,2,0,6,4,46,91,39,29,13,0,0,0,0,3,0,7,32,53,104,19,16,0,0,0,0,1,5,22,21,63,12,41,8,0,1,1,1,0,1,5,22,28,33,65,7,2,0,0,1,0,6,34,119,73,104,37,25,1,0,1,1,2,1,3,13,44,19,43,9,2,1,0,0,0,5,6,25,19,136,23,11,4,1,0,0,2,2,33,58,180,98,41,21,0,2,0,0,4,23,54,89,196,95,92,94,3,1,0,1,1,3,10,29,74,52,24,8,2,1,1,0,0,13,41,70,87,123,153,125,25,0,2,1,0,0,19,34,62,65,19,5,0,0,0,0,0,0,30,52,56,71,61,15,2,0,0,0,1,0,3,29,35,37,16,17,2,2,1,0,1,3,32,63,82,44,182,1,0;1,1,1,0,9,25,188,489,178,177,36,4,1,3,2,13,9,45,148,303,514,127,108,16,6,0,3,2,20,67,140,229,100,106,43,16,5,4,2,3,3,32,101,122,122,169,65,16,12,5,15,4,22,144,588,440,532,164,145,23,19,6,13,7,6,31,63,200,126,283,85,30,5,3,3,11,20,48,162,88,665,132,107,53,12,7,5,22,16,142,177,788,529,209,79,9,23,0,3,18,74,298,288,970,416,343,487,25,31,8,11,4,18,36,150,321,228,148,57,7,4,1,0,0,23,143,260,363,465,676,354,145,47,6,6,9,8,131,202,322,244,115,28,4,2,1,2,4,6,130,247,226,335,246,91,18,3,2,1,4,5,19,165,131,149,81,94,25,14,16,5,1,32,153,291,0,278,404,39,0;1109,1289,732,644,2094,869,2551,4126,5741,2002,4929,2247,2550,1371,2462;-1392,-346 -1391,-344 -1388,-342 -1383,-335 -1380,-334 -1381,-331 -1382,-330 -1380,-328 -1382,-326 -1379,-326 -1379,-325 -1381,-324 -1384,-326 -1390,-324 -1388,-322 -1389,-320 -1395,-318 -1396,-316 -1397,-317 -1399,-317 -1400,-315 -1398,-314 -1398,-312 -1395,-314 -1398,-309 -1397,-307 -1393,-305 -1392,-307 -1386,-311 -1385,-309 -1384,-310 -1384,-308 -1382,-305 -1387,-299 -1387,-297 -1385,-295 -1384,-293 -1380,-288 -1379,-285 -1376,-284 -1379,-279 -1378,-276 -1381,-273 -1378,-271 -1377,-266 -1377,-260 -1392,-267 -1408,-263 -1408,-265 -1407,-266 -1411,-271 -1414,-274 -1414,-277 -1417,-277 -1416,-279 -1417,-281 -1416,-282 -1419,-288 -1419,-292 -1422,-294 -1419,-296 -1420,-300 -1419,-306 -1421,-309 -1420,-310 -1420,-311 -1418,-313 -1418,-317 -1416,-320 -1411,-320 -1409,-321 -1406,-325 -1407,-328 -1403,-333 -1400,-333 -1400,-335 -1402,-339 -1400,-343 -1394,-346 -1392,-346
+PE-TUM;Tumbes;0,0,0,0,0,3,0,0,0,2,5,6,0,0,0,0,2,2,0,1,1,2,3,11,0,0,0,2,2,2,0,0,0,0,0,2,1,0,0,0,1,5,9,0,1,0,1,14,1,0,0,0,3,2,1,1,2,2,3,15,0,0,0,0,5,4,0,2,0,6,4,15,2,0,0,3,10,4,2,0,0,2,9,3,1,0,0,0,0,6,1,0,0,1,2,8,5,0,0,1,0,3,0,0,0,1,3,5,0,0,1,0,2,9,5,3,3,1,3,6,1,0,0,0,0,0,6,3,2,1,17,17,0,0,0,1,0,4,3,0,0,1,3,6,2,0,0,0,0,6,10,3,6,0,2,27,0,0,0,0,3,13,7,3,0,1,8,29,2,0,0,1,0,2,8,1,2,1,9,10,3,0,0,4,1,2,9,1,0,5,3,2,3,0,0,0,2,0,2,1,2,0,3,6,3,0,0,0,2,3,1,5,6,2,15,10,3,0,0,0,0,7,7,0,2,2,8,7,2,0,0,0,0,4,3,0,0,0,5,1,7,1,0,0,0,5,7,1,1,1,4,5,2,0,0,1,0,4,2,2,4,4,5,15,1,0,0,0,1,1,0,0,2,0,0,10,5,0,0,0,1,3,0,0,0,0,0,0;5,0,0,1,6,20,17,4,4,16,34,33,6,2,0,0,2,7,36,12,6,7,63,62,13,9,1,4,2,4,13,6,2,8,6,47,9,0,2,0,0,19,18,11,14,7,27,28,5,0,0,0,8,23,19,12,8,15,42,96,21,0,0,0,0,10,33,4,8,17,16,36,38,5,0,6,4,15,23,7,16,13,9,20,11,2,3,2,9,16,13,13,11,12,16,28,11,1,0,2,8,34,9,25,12,27,55,38,12,1,0,0,2,16,28,3,14,5,37,53,14,1,3,0,5,26,18,6,3,2,31,32,37,3,0,0,0,16,30,8,10,3,39,34,0,0,1,4,10,16,19,16,28,31,55,69,10,6,1,0,3,13,16,6,2,5,21,70,26,0,1,1,0,24,28,0,5,2,0,0;140,203,115,135,228,145,247,282,446,328,272,372,464,295,173;-1612,-84 -1609,-80 -1606,-80 -1603,-78 -1605,-68 -1610,-70 -1612,-72 -1615,-74 -1621,-82 -1619,-83 -1612,-84
+PE-PIU;Piura;3,1,4,1,2,5,6,7,37,56,74,30,13,5,0,3,2,5,3,14,13,14,83,22,1,1,0,1,2,7,11,11,33,11,178,45,4,0,2,4,1,10,9,3,39,67,51,24,6,3,3,2,8,5,12,1,13,16,36,53,22,2,1,8,7,5,14,13,20,14,54,35,8,0,4,3,7,8,17,14,26,30,80,41,3,0,2,1,26,24,30,21,29,22,112,20,10,4,5,5,20,6,23,12,5,43,33,22,5,2,1,6,15,29,44,34,94,42,27,44,18,4,0,10,3,17,27,14,24,13,76,37,7,8,1,4,4,11,13,22,32,28,52,19,11,4,1,0,7,19,25,18,33,38,19,14,18,1,1,3,22,29,35,34,35,37,236,65,13,6,2,0,9,22,28,27,48,73,94,50,43,20,25,16,5,8,19,21,38,21,41,63,13,5,10,1,12,26,21,23,28,8,29,14,24,4,5,4,2,26,21,12,23,38,149,6,10,4,4,9,7,12,22,12,13,17,42,19,10,6,3,2,1,15,22,8,10,22,71,37,18,6,3,1,0,13,17,13,63,32,48,20,7,5,7,6,9,25,24,17,49,40,113,30,14,1,4,1,2,28,40,4,23,19,7,55,8,0,4,3,14,21,6,13,27,10,3,0;33,12,3,10,41,137,219,162,307,160,187,350,104,67,12,50,33,96,146,97,136,136,475,173,102,49,30,72,19,52,100,80,147,183,255,189,95,23,8,7,78,58,208,108,245,168,180,192,155,22,23,34,104,123,303,151,259,311,892,262,151,6,1,3,24,77,186,222,184,239,338,234,367,67,105,103,99,96,169,171,202,184,219,379,103,15,33,45,63,158,182,149,129,70,167,145,147,86,28,40,59,162,225,174,172,318,440,146,95,82,21,23,50,131,234,115,121,69,209,154,107,52,29,31,29,78,178,93,102,134,293,198,202,39,12,1,1,86,153,100,318,139,260,288,83,34,37,73,102,285,173,159,189,251,648,256,190,22,16,16,19,115,296,61,115,168,116,555,202,15,21,24,107,198,110,0,145,67,25,0;1621,1525,1278,1370,2639,1665,3562,2586,3885,2550,2623,3189,4344,3168,1737;-1621,-82 -1625,-85 -1627,-94 -1622,-100 -1622,-101 -1623,-102 -1624,-105 -1619,-109 -1617,-114 -1618,-116 -1619,-117 -1621,-116 -1623,-117 -1623,-121 -1613,-127 -1607,-119 -1602,-117 -1600,-115 -1599,-110 -1598,-110 -1597,-113 -1595,-113 -1595,-116 -1593,-116 -1592,-119 -1590,-118 -1588,-119 -1587,-118 -1588,-115 -1588,-111 -1586,-110 -1587,-103 -1584,-99 -1586,-98 -1588,-96 -1590,-91 -1593,-89 -1597,-89 -1602,-86 -1608,-89 -1610,-88 -1607,-84 -1610,-81 -1612,-84 -1619,-83 -1621,-82
+PE-LAM;Lambayeque;8,12,6,8,7,10,21,17,15,19,22,18,15,3,24,15,10,13,3,9,12,9,18,3,4,0,4,5,6,4,5,15,18,10,42,16,9,1,3,3,11,2,8,11,11,20,11,12,4,8,3,2,20,15,13,5,9,8,11,10,9,5,0,5,6,5,7,6,28,13,29,46,7,6,6,4,22,7,12,15,10,11,17,19,4,3,5,5,22,15,16,22,16,16,18,13,16,3,9,2,6,8,18,10,7,5,20,18,7,1,4,6,2,9,10,13,15,6,14,24,15,10,3,14,10,13,20,18,16,5,17,10,8,13,13,27,15,27,15,7,22,19,19,16,6,8,7,3,7,11,16,12,14,17,11,19,9,4,5,5,23,26,40,31,16,8,157,9,10,3,0,1,10,18,31,25,44,69,47,31,23,12,13,16,14,9,29,17,16,23,27,30,18,1,6,9,8,27,26,24,15,13,4,14,13,5,7,18,24,41,23,18,11,22,28,11,16,9,5,5,6,4,18,23,13,8,23,20,11,9,3,5,21,42,14,12,15,4,21,18,16,7,0,5,22,30,15,10,38,15,39,46,12,9,14,9,40,31,19,19,22,25,22,8,21,1,9,8,9,14,45,20,14,8,14,14,3,2,4,6,25,36,11,26,5,10,3,0;13,21,29,26,26,39,55,70,68,47,59,79,48,34,14,47,30,57,85,74,59,65,126,60,47,29,53,49,38,63,88,52,60,63,109,93,62,11,11,14,13,46,96,71,47,91,66,69,23,11,13,49,68,104,97,99,82,67,587,59,82,23,1,14,13,52,65,82,184,177,205,126,95,81,63,87,68,72,98,97,81,93,106,117,117,14,22,36,33,159,80,76,89,64,53,81,80,43,41,46,105,166,113,72,37,89,96,62,49,52,21,25,35,57,108,112,90,58,86,89,55,33,27,42,52,129,92,74,62,63,91,73,44,15,3,1,37,80,51,68,180,58,111,128,50,27,49,62,191,136,96,100,102,69,135,69,66,19,25,24,30,56,112,94,93,68,43,94,33,12,20,32,87,86,56,0,51,50,8,0;532,699,744,597,1259,1024,1929,1520,1929,1571,1563,1401,1988,1416,840;-1613,-127 -1601,-134 -1594,-143 -1589,-139 -1586,-140 -1586,-138 -1583,-135 -1583,-134 -1587,-133 -1589,-128 -1589,-126 -1586,-125 -1586,-123 -1584,-121 -1590,-118 -1592,-118 -1593,-116 -1595,-116 -1595,-113 -1597,-113 -1598,-110 -1599,-110 -1600,-115 -1602,-117 -1607,-119 -1613,-127
+PE-CAJ;Cajamarca;8,2,0,1,0,5,8,43,81,53,52,27,68,0,3,4,5,3,0,50,30,7,47,33,19,0,0,3,7,6,69,133,94,15,281,38,7,0,1,0,1,4,7,11,36,308,47,5,6,16,0,0,0,1,11,29,32,81,10,62,0,4,2,0,2,3,3,11,12,17,34,38,0,2,1,1,2,1,6,37,59,56,125,19,8,5,1,1,2,5,20,85,64,62,127,26,28,5,4,1,2,2,12,16,6,58,16,4,0,1,0,2,0,2,15,66,117,11,10,36,5,1,1,2,3,0,11,21,85,17,91,10,7,1,1,0,1,1,11,33,89,17,43,6,1,5,0,0,0,1,3,58,115,58,41,9,22,0,3,5,3,6,25,66,58,93,608,16,2,0,0,2,0,3,4,3,12,12,61,28,7,7,0,2,2,6,9,32,124,27,13,46,10,0,0,2,4,5,11,46,40,10,14,5,13,1,0,0,3,3,5,49,68,135,181,7,2,6,2,2,2,1,9,27,24,11,7,12,15,6,0,0,3,10,14,45,69,51,86,127,12,0,10,0,2,6,27,58,102,52,24,2,0,6,12,0,6,10,21,142,331,74,254,19,3,0,1,0,1,3,8,14,10,12,0,67,6,0,5,6,8,9,27,109,107,59,2,0;8,21,7,6,27,64,121,355,700,209,160,266,27,34,11,44,8,13,55,139,407,157,686,160,65,8,12,7,11,16,83,215,446,239,412,74,24,43,2,15,16,32,62,348,696,367,330,150,174,7,21,23,35,45,126,446,342,676,2799,76,62,50,9,9,4,20,45,45,102,144,428,151,63,53,14,16,3,46,58,165,614,225,132,262,106,4,7,19,25,36,72,238,323,71,161,87,109,48,25,25,51,100,79,578,334,731,721,149,10,52,12,12,14,15,54,152,149,104,72,147,150,21,12,19,12,59,74,214,466,503,643,662,135,18,49,16,21,45,112,408,740,207,214,58,63,79,54,21,73,88,137,677,1600,388,1189,110,43,8,7,12,15,43,76,86,91,103,47,548,53,7,82,79,45,64,99,0,488,364,50,0;1944,1741,1588,2085,4770,1069,3146,2287,6083,1666,5698,4110,8826,2188,2674;-1588,-119 -1584,-121 -1586,-123 -1586,-125 -1589,-127 -1589,-130 -1587,-133 -1583,-134 -1583,-135 -1587,-139 -1586,-144 -1587,-147 -1582,-149 -1580,-153 -1576,-148 -1573,-149 -1573,-150 -1572,-151 -1567,-150 -1567,-153 -1565,-155 -1563,-153 -1559,-153 -1555,-149 -1560,-140 -1561,-134 -1563,-130 -1570,-122 -1572,-121 -1574,-118 -1574,-114 -1570,-108 -1574,-104 -1573,-96 -1574,-92 -1577,-93 -1578,-97 -1581,-100 -1584,-99 -1587,-103 -1586,-110 -1588,-111 -1588,-115 -1587,-118 -1588,-119
+PE-AMA;Amazonas;24,3,0,1,1,6,16,43,55,28,14,15,82,7,1,2,3,4,6,42,35,9,29,16,50,1,3,0,7,2,110,144,55,2,81,20,15,1,0,1,7,2,29,36,29,114,14,6,0,20,1,0,0,0,16,81,17,59,2,40,2,5,3,0,3,4,5,27,23,20,10,29,1,1,0,0,4,5,10,16,43,27,69,10,8,6,2,0,2,0,25,102,25,46,47,6,5,0,9,1,3,1,5,27,4,49,5,1,0,1,0,0,4,5,20,47,52,7,4,11,1,1,2,13,0,0,9,17,46,8,16,7,2,3,1,0,6,1,7,19,29,16,26,1,1,2,0,0,0,2,4,18,48,64,12,8,12,0,2,3,0,4,17,51,42,35,158,3,2,0,0,0,0,3,12,24,18,15,33,5,12,8,2,0,1,4,15,8,74,11,6,25,9,0,0,3,3,5,11,60,41,3,6,0,38,2,1,2,10,20,3,38,51,58,38,9,3,8,1,2,0,4,15,30,16,7,5,15,35,9,2,0,0,7,6,30,88,48,39,121,27,0,1,1,1,5,11,42,46,31,17,1,6,5,1,1,7,9,8,103,175,36,72,3,1,0,0,1,1,3,13,4,5,7,4,65,1,1,2,4,4,0,2,16,26,14,0,0;6,20,4,16,13,76,122,328,339,100,76,127,9,24,9,75,20,12,45,116,316,119,215,91,53,15,7,9,12,21,46,137,240,158,197,36,23,27,3,5,5,16,35,185,378,240,156,74,127,18,8,8,30,38,141,287,262,319,731,51,53,16,6,3,1,39,85,101,143,139,199,118,78,44,10,3,5,44,60,123,428,124,63,111,113,8,4,16,34,34,71,297,240,104,106,38,126,58,24,27,69,141,76,635,173,510,297,144,15,37,8,24,20,27,121,199,168,102,73,206,190,25,21,5,11,70,97,178,470,398,372,488,145,24,29,5,19,44,106,368,355,209,211,35,109,66,37,15,49,78,101,556,856,381,450,84,51,12,2,12,22,38,84,66,75,89,64,440,54,15,35,37,44,36,55,0,282,240,18,0;1227,1051,931,1147,2020,903,2141,2008,4538,1887,4658,3045,5399,2004,1638;-1560,-139 -1556,-139 -1554,-138 -1555,-135 -1553,-132 -1548,-134 -1548,-132 -1546,-127 -1544,-128 -1543,-126 -1545,-123 -1548,-121 -1553,-120 -1554,-117 -1556,-115 -1555,-109 -1554,-106 -1554,-101 -1556,-96 -1551,-88 -1552,-85 -1551,-81 -1551,-78 -1553,-76 -1553,-72 -1556,-68 -1557,-60 -1559,-61 -1564,-67 -1564,-70 -1567,-68 -1569,-76 -1572,-80 -1571,-82 -1573,-87 -1573,-89 -1574,-92 -1573,-96 -1574,-104 -1570,-108 -1574,-114 -1574,-118 -1572,-121 -1570,-122 -1563,-130 -1561,-134 -1560,-139
+PE-LAL;La Libertad;14,7,11,21,26,31,32,98,62,43,26,16,22,1,10,11,40,20,24,38,15,14,16,19,12,3,0,9,11,22,106,141,50,14,58,19,4,11,12,18,32,6,24,19,24,60,12,11,3,10,2,6,27,17,21,38,25,22,2,17,6,3,2,3,19,4,13,9,16,9,4,11,5,9,5,6,33,9,5,26,32,12,20,0,11,4,6,12,24,8,15,106,30,29,27,12,11,2,5,10,32,4,12,36,8,36,18,23,6,7,16,16,42,22,13,75,58,7,3,14,13,8,9,18,12,19,29,17,56,6,16,14,10,6,8,25,21,21,26,59,67,19,16,13,20,10,14,10,16,20,20,56,70,20,5,23,21,4,11,23,33,48,90,85,29,34,240,35,36,28,17,20,12,23,24,11,17,6,31,13,13,8,6,11,49,12,18,41,53,20,14,23,3,10,15,36,30,13,13,70,23,9,15,14,7,11,15,25,39,30,19,72,33,48,43,15,13,13,12,5,8,2,20,72,29,14,7,15,17,5,11,11,40,26,28,34,43,22,36,62,8,5,6,5,32,36,35,71,50,21,11,15,11,15,8,18,45,23,79,93,174,13,50,20,19,5,6,10,22,22,21,19,15,8,11,59,12,5,7,21,37,23,23,60,40,20,2,0;25,22,31,44,106,76,105,324,236,63,67,57,54,35,10,93,59,78,83,102,334,45,108,126,68,62,43,80,78,90,110,275,364,80,127,65,90,27,51,52,49,74,123,288,302,200,126,120,93,31,31,54,125,137,304,420,259,228,1053,94,64,56,15,33,49,74,139,93,86,78,136,56,57,45,44,72,134,77,93,205,339,101,69,107,51,47,47,82,71,80,142,308,234,70,62,56,73,42,44,84,132,107,111,481,174,289,247,61,22,51,44,39,42,41,112,177,116,56,55,67,68,25,41,65,165,99,160,121,167,123,345,246,66,38,28,52,115,126,183,449,296,72,86,76,61,42,43,74,122,97,305,439,1030,109,193,68,67,41,30,48,95,60,134,125,138,52,84,250,43,34,29,100,120,99,101,0,233,228,28,0;1156,1127,1442,1502,2829,879,2437,2525,3745,1678,3232,3059,4969,2236,1978;-1594,-143 -1592,-149 -1589,-153 -1589,-155 -1580,-164 -1578,-169 -1575,-172 -1575,-176 -1573,-179 -1572,-179 -1570,-175 -1564,-173 -1563,-167 -1559,-163 -1558,-161 -1553,-161 -1546,-171 -1538,-166 -1539,-163 -1541,-161 -1544,-160 -1547,-161 -1548,-160 -1549,-157 -1550,-155 -1550,-154 -1551,-151 -1553,-148 -1553,-144 -1555,-139 -1560,-139 -1555,-149 -1559,-153 -1563,-153 -1565,-155 -1567,-153 -1567,-150 -1572,-151 -1573,-150 -1573,-149 -1574,-148 -1577,-149 -1580,-153 -1582,-149 -1587,-147 -1586,-144 -1587,-140 -1589,-139 -1594,-143
+PE-ANC;Ancash;1,2,6,4,1,13,14,74,64,43,26,5,6,0,0,5,3,7,13,22,14,6,1,3,4,1,2,4,5,14,108,184,41,9,36,4,3,4,3,4,6,6,14,10,16,25,2,2,1,0,1,1,4,7,20,30,13,29,6,4,0,0,1,3,3,9,13,22,27,1,3,2,0,3,5,1,5,7,9,17,32,5,16,1,0,2,2,2,4,10,48,181,54,56,14,5,2,5,5,1,2,4,24,43,9,32,5,2,4,3,8,1,1,2,33,65,30,0,3,6,5,3,2,1,3,4,18,10,42,13,16,6,2,1,1,5,5,10,8,43,34,6,21,1,5,2,5,7,2,14,10,69,32,20,11,7,14,2,3,1,6,10,81,57,46,20,192,7,4,9,3,1,6,7,6,17,21,9,14,1,7,4,3,1,4,2,7,15,54,3,8,8,11,2,2,2,3,10,11,82,31,6,6,2,4,2,4,11,7,6,18,94,37,41,47,1,4,1,9,6,10,5,26,30,19,2,8,7,4,6,3,5,9,5,23,31,38,48,46,21,9,8,0,10,6,4,45,59,17,6,5,3,3,3,3,18,7,20,56,78,155,15,18,5,8,1,1,2,3,15,20,17,14,5,9,50,2,3,4,4,5,8,16,69,51,74,1,0;8,16,18,21,39,20,97,422,198,59,19,30,34,5,7,29,21,27,73,77,181,49,60,40,14,13,20,26,29,31,67,200,195,42,97,23,37,11,9,32,20,57,100,247,267,123,75,51,77,13,31,23,35,78,340,273,391,153,737,45,13,23,15,27,19,35,70,73,57,50,62,16,25,20,29,32,17,17,32,131,260,77,26,48,32,31,25,30,34,58,102,364,193,66,16,30,36,21,32,28,48,84,140,528,189,210,265,14,16,27,25,41,28,57,126,107,121,27,44,35,33,32,17,34,45,34,160,168,215,191,250,138,27,24,22,21,29,53,168,291,144,22,25,24,35,11,34,40,34,80,214,390,944,79,102,12,18,13,10,37,18,36,149,149,109,49,52,318,28,17,25,28,43,65,106,0,345,536,19,0;947,603,757,1029,2196,460,1317,1912,3324,1296,2476,1687,3853,1979,2320;-1573,-179 -1573,-181 -1571,-183 -1572,-184 -1571,-184 -1570,-184 -1570,-186 -1568,-188 -1568,-192 -1565,-196 -1565,-198 -1563,-203 -1558,-212 -1556,-211 -1555,-207 -1553,-207 -1552,-207 -1555,-211 -1553,-211 -1552,-212 -1552,-215 -1549,-215 -1540,-206 -1538,-206 -1538,-203 -1536,-201 -1538,-195 -1541,-193 -1539,-191 -1538,-187 -1537,-186 -1535,-187 -1535,-184 -1543,-179 -1546,-171 -1553,-161 -1558,-161 -1559,-163 -1563,-167 -1564,-173 -1570,-175 -1572,-179 -1573,-179
+PE-SAM;San Martín;312,127,5,23,16,33,112,947,960,115,55,11,232,271,11,24,79,46,156,734,861,150,46,26,202,165,12,12,38,34,345,1520,742,98,99,16,94,53,12,17,79,61,342,859,870,171,11,23,308,434,14,14,43,75,279,1588,655,245,20,19,60,157,16,10,17,70,151,1040,869,88,55,114,38,50,1,4,13,47,182,805,712,143,106,154,226,113,20,7,14,62,263,1790,758,131,35,33,143,69,18,16,10,40,106,1290,487,139,31,1,58,44,13,3,40,62,278,1221,1255,122,64,24,35,35,18,71,28,17,177,541,1135,77,42,72,44,21,7,10,19,50,101,517,567,72,27,26,57,28,11,7,9,21,116,789,853,181,43,38,152,10,15,10,24,68,234,1266,654,85,78,51,37,39,3,17,8,36,110,425,306,106,18,21,79,59,5,9,18,74,186,643,671,87,9,46,15,11,9,10,23,72,58,673,604,65,15,19,52,49,13,23,31,179,187,649,364,76,44,45,81,41,4,22,27,49,192,830,387,84,33,61,156,33,5,4,12,86,189,830,703,107,62,83,129,52,3,3,11,79,237,609,491,139,21,9,41,27,13,16,39,98,262,723,904,190,20,19,87,34,23,4,22,35,85,231,234,95,39,110,11,32,5,6,25,37,58,224,194,66,13,0;309,553,178,102,279,454,1162,4992,5024,858,357,143,311,383,182,400,113,268,1081,3108,5101,484,345,322,538,429,71,79,81,337,750,2955,3124,431,233,200,265,265,107,54,65,293,620,3640,4101,970,262,183,918,89,130,76,196,427,1279,4533,3232,700,655,220,224,273,169,139,78,296,779,1969,1655,947,174,159,335,417,103,62,184,477,931,2856,2674,343,92,243,139,203,61,98,175,397,670,2982,2321,300,120,122,408,647,145,168,411,1140,1114,5835,1383,853,309,314,621,409,112,135,205,416,1144,3966,2279,543,96,315,759,220,111,64,119,683,1317,4175,3175,472,376,539,1014,487,55,38,144,459,1312,3793,2595,624,153,83,372,170,128,181,231,598,1587,4507,3599,914,133,181,367,170,132,126,166,255,787,2176,1429,578,253,737,87,160,33,50,192,289,648,0,2085,726,93,0;14411,12098,9228,10825,12455,6862,17062,15234,25448,19841,23655,21369,24366,14455,8610;-1555,-139 -1553,-144 -1553,-148 -1551,-151 -1550,-154 -1550,-155 -1549,-157 -1548,-160 -1547,-161 -1544,-160 -1541,-161 -1538,-164 -1539,-167 -1543,-169 -1539,-171 -1531,-170 -1530,-172 -1528,-169 -1527,-168 -1525,-176 -1523,-175 -1522,-173 -1522,-168 -1519,-165 -1519,-162 -1517,-160 -1518,-158 -1520,-158 -1521,-156 -1522,-152 -1524,-149 -1524,-147 -1520,-142 -1521,-136 -1518,-136 -1515,-138 -1510,-135 -1511,-127 -1510,-125 -1511,-121 -1515,-123 -1520,-122 -1524,-123 -1526,-122 -1528,-119 -1534,-120 -1536,-116 -1542,-113 -1550,-111 -1551,-109 -1552,-109 -1554,-108 -1555,-109 -1556,-116 -1554,-117 -1553,-120 -1548,-121 -1545,-123 -1543,-126 -1544,-128 -1546,-127 -1548,-132 -1548,-134 -1550,-134 -1552,-132 -1554,-133 -1555,-136 -1554,-138 -1555,-139
+PE-HUC;Huánuco;5,1,0,14,22,79,131,518,760,297,37,5,10,0,1,3,30,61,47,232,702,86,26,1,10,2,3,5,42,63,369,1407,777,231,44,0,1,0,1,6,43,26,176,411,712,68,4,0,1,1,0,0,14,60,87,608,1034,303,9,5,4,0,0,3,30,49,74,353,912,113,59,1,0,0,1,0,8,19,61,236,686,252,18,4,3,0,5,6,14,52,179,1059,992,118,82,2,1,0,0,3,15,35,77,350,613,96,27,1,3,0,3,1,30,38,190,981,1307,325,32,0,2,0,0,17,12,15,79,124,1081,96,51,18,0,0,0,5,8,38,54,488,573,219,2,2,1,0,0,1,13,28,67,579,1052,228,19,10,8,0,0,4,10,49,280,567,617,158,55,5,0,1,1,1,9,38,145,327,570,183,7,14,3,1,0,6,18,39,112,392,1189,34,1,3,0,0,0,7,17,53,45,800,1079,157,6,5,2,0,4,9,45,23,74,318,519,310,90,6,2,1,0,1,17,10,91,320,534,173,2,1,7,0,0,5,6,42,98,329,1048,160,98,10,6,1,0,1,6,49,209,592,837,170,18,1,2,0,1,4,27,41,104,336,1200,247,7,0,1,0,0,2,10,14,89,151,204,82,18,35,0,0,0,1,11,12,26,120,188,102,10,0;7,8,23,38,162,234,884,3769,4698,1078,134,4,25,5,10,138,72,86,367,902,4469,613,272,80,8,0,14,39,65,290,423,2015,2266,1335,64,22,10,11,31,30,61,182,404,2141,3833,1209,135,81,80,6,21,46,96,349,1274,2319,2872,964,383,50,10,28,13,51,77,217,612,1278,2571,1343,40,79,33,11,13,43,104,216,454,1570,3888,222,95,69,18,3,2,65,142,327,259,3078,3817,649,102,11,24,16,24,102,252,221,488,3019,1880,1400,437,78,36,15,16,34,106,92,473,1354,2510,657,56,22,59,4,11,48,96,308,516,1637,3849,680,622,77,33,2,7,45,109,374,985,2769,3363,782,111,27,34,7,9,46,126,243,719,2024,4840,1180,54,35,23,18,11,19,90,145,501,964,1880,882,141,209,7,14,9,20,106,118,244,0,1784,1247,92,0;11039,7039,6541,8128,8460,6319,13642,16763,15816,11393,15511,17234,18253,9755,6752;-1546,-171 -1543,-179 -1535,-184 -1535,-187 -1537,-186 -1538,-187 -1539,-191 -1541,-193 -1538,-195 -1537,-198 -1536,-201 -1538,-203 -1538,-206 -1535,-209 -1528,-206 -1525,-208 -1520,-210 -1518,-206 -1515,-205 -1514,-202 -1512,-200 -1506,-197 -1505,-196 -1503,-197 -1500,-197 -1497,-195 -1492,-186 -1493,-179 -1490,-174 -1492,-172 -1496,-172 -1499,-179 -1501,-178 -1503,-179 -1505,-186 -1508,-186 -1512,-188 -1517,-181 -1520,-173 -1519,-168 -1520,-166 -1522,-168 -1522,-173 -1525,-176 -1527,-168 -1528,-169 -1530,-172 -1531,-170 -1539,-171 -1543,-169 -1545,-169 -1546,-171
+PE-PAS;Pasco;0,0,1,4,6,40,66,155,309,237,27,1,2,0,0,6,15,24,17,83,241,34,10,0,4,1,1,1,26,43,147,352,231,176,5,0,0,0,0,0,28,16,133,153,208,28,0,0,1,0,0,1,9,38,43,157,330,89,8,6,0,0,0,0,14,17,42,158,272,52,29,0,0,0,0,0,1,9,13,124,160,70,0,0,2,0,1,1,8,30,68,515,359,59,42,0,0,0,0,5,11,20,36,123,284,73,11,1,1,0,1,1,15,19,78,308,373,99,22,0,1,0,0,15,8,5,37,56,278,33,30,0,0,0,1,6,3,10,18,162,175,127,17,2,0,1,2,1,2,13,30,216,227,88,20,0,3,1,1,6,11,19,110,193,236,72,41,2,1,0,1,2,0,12,67,149,207,101,0,1,0,1,0,6,13,21,87,190,383,22,0,4,0,0,0,8,9,29,29,332,234,48,3,0,0,1,1,20,29,25,38,182,228,200,40,2,0,0,0,2,12,11,66,140,116,60,0,2,0,0,0,1,4,27,46,130,251,67,82,6,1,0,0,0,0,30,69,199,170,77,5,0,0,0,0,2,9,16,28,124,211,111,29,1,0,0,0,2,2,4,35,66,81,13,7,6,0,0,0,0,3,3,11,37,37,31,2,0;5,0,10,17,92,98,363,927,1123,545,44,0,2,0,0,71,46,53,203,402,1020,126,245,10,1,0,3,60,30,93,154,788,820,569,52,12,1,3,16,14,4,77,184,796,956,590,138,12,35,2,7,12,67,117,497,854,923,435,145,27,7,3,7,26,7,58,280,488,704,692,27,28,9,5,1,22,74,101,300,645,1440,83,25,10,2,1,3,34,60,164,162,1249,889,269,62,1,8,1,12,46,142,110,167,926,661,685,259,4,11,3,9,11,48,54,253,563,734,422,31,16,14,2,1,26,47,180,200,561,1035,271,325,32,24,0,2,44,35,199,306,900,740,266,66,10,2,5,8,21,33,123,235,703,1009,611,86,9,4,5,0,9,37,48,266,475,688,308,58,41,9,6,7,7,44,30,127,0,412,399,40,0;3224,2178,2582,2791,3121,2327,5545,5625,6493,4311,5447,5130,5489,3911,2172;-1535,-209 -1531,-219 -1532,-220 -1530,-222 -1527,-222 -1525,-223 -1525,-219 -1523,-219 -1520,-217 -1517,-218 -1515,-216 -1512,-216 -1511,-215 -1510,-215 -1510,-218 -1506,-217 -1504,-215 -1502,-214 -1501,-213 -1494,-218 -1491,-218 -1485,-213 -1483,-213 -1483,-212 -1485,-209 -1485,-205 -1487,-201 -1490,-193 -1492,-190 -1494,-189 -1497,-195 -1500,-197 -1503,-197 -1505,-196 -1506,-197 -1513,-201 -1515,-205 -1518,-206 -1520,-210 -1525,-208 -1528,-206 -1535,-209
+PE-LIM;Lima;4,2,3,5,1,1,3,13,15,19,36,0,1,2,5,5,8,3,7,23,2,2,9,3,1,2,0,3,6,4,16,25,19,20,21,4,3,3,1,1,6,2,16,7,4,7,6,4,0,3,0,3,2,3,13,12,13,10,2,10,3,2,3,3,5,3,5,7,6,0,2,8,7,1,3,1,1,1,4,4,6,3,12,1,1,0,1,2,0,7,1,20,19,13,7,4,1,0,2,4,3,0,6,13,10,11,11,2,2,2,4,5,1,6,11,24,10,14,6,3,3,1,7,7,0,4,8,4,23,10,9,5,0,4,2,3,1,1,7,14,4,7,6,6,5,3,2,2,1,7,3,20,4,11,11,1,9,2,2,2,5,2,3,16,9,18,70,6,5,0,4,1,1,3,2,3,6,2,16,5,1,1,0,2,4,1,5,6,6,0,10,6,2,0,4,0,1,10,9,14,4,24,5,2,3,3,2,3,4,2,6,33,13,16,18,1,3,1,1,3,2,2,10,14,5,6,12,10,2,4,4,4,3,8,2,13,23,21,29,5,7,2,0,4,0,7,11,6,14,3,8,3,1,0,2,5,4,2,12,17,10,29,2,2,0,0,0,1,2,2,16,16,4,19,39,50,4,1,0,2,3,6,5,21,18,31,1,0;15,21,8,24,31,22,38,76,23,53,17,27,21,9,10,23,21,23,29,30,89,46,45,36,9,10,15,25,14,19,41,65,48,42,52,14,23,6,10,14,5,34,30,50,55,36,66,38,41,9,19,11,29,24,39,63,63,124,204,28,5,10,17,6,9,10,22,17,21,22,48,24,16,16,9,11,20,7,20,41,42,21,47,59,23,4,10,11,14,20,49,75,36,63,31,14,15,13,11,14,11,22,53,148,42,36,105,9,8,9,12,11,15,19,24,77,43,31,48,41,10,5,17,17,9,28,24,29,66,139,126,35,12,3,5,10,14,23,35,52,29,8,25,18,5,10,7,16,19,20,71,62,77,141,56,12,25,4,14,18,17,20,54,90,36,68,123,245,15,13,20,14,20,36,46,0,68,140,10,0;355,382,354,367,654,211,599,715,953,657,1056,516,958,1432,876;-1558,-212 -1553,-220 -1552,-223 -1553,-226 -1547,-229 -1544,-234 -1541,-232 -1539,-235 -1537,-235 -1538,-237 -1538,-239 -1535,-238 -1533,-239 -1534,-242 -1533,-246 -1534,-248 -1536,-248 -1536,-250 -1531,-257 -1529,-261 -1525,-267 -1519,-260 -1516,-261 -1513,-261 -1512,-260 -1513,-258 -1510,-256 -1512,-253 -1511,-247 -1513,-244 -1513,-243 -1514,-241 -1521,-239 -1524,-235 -1524,-232 -1526,-232 -1527,-230 -1530,-225 -1530,-222 -1532,-220 -1531,-219 -1535,-209 -1538,-206 -1540,-206 -1544,-211 -1547,-212 -1548,-214 -1552,-215 -1552,-212 -1553,-211 -1555,-211 -1552,-207 -1554,-206 -1555,-208 -1556,-211 -1558,-212
+PE-CAL;El Callao;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,5,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0;0,2,0,0,4,5,2,0,1,1,2,1,0,1,5;-1542,-242 -1542,-238 -1543,-236 -1543,-240 -1543,-241 -1542,-242
+PE-LMA;Municipalidad Metropolitana de Lima;0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;2,2,4,3,2,0,0,0,0,0,3,2,2,1,0,6,1,2,0,0,2,0,2,3,0,5,2,6,0,0,0,0,1,2,3,2,5,3,5,0,1,0,1,0,1,0,1,4,0,0,1,1,3,0,0,0,1,1,2,3,10,2,1,3,0,1,0,1,2,0,0,1,0,0,4,4,2,0,0,0,0,0,1,1,1,0,5,5,5,0,0,0,1,0,2,1,0,0,2,0,0,0,0,0,3,4,2,2,1,5,1,7,2,1,0,5,1,0,0,1,1,0,0,1,0,3,0,2,1,0,1,0,3,0,2,0,2,0,0,0,0,1,0,3,3,1,2,2,1,0,1,0,3,1,1,2,3,0,5,3,2,0,4,3,0,10,12,15,10,2,6,13,2,4,5,0,1,2,1,0;18,19,21,21,12,21,22,27,18,43,21,29,32,111,87;-1544,-234 -1544,-236 -1542,-237 -1542,-242 -1541,-243 -1540,-244 -1536,-248 -1534,-248 -1533,-246 -1534,-242 -1533,-239 -1534,-238 -1539,-239 -1538,-237 -1537,-235 -1539,-235 -1541,-232 -1544,-234
+PE-UCA;Ucayali;29,2,1,10,22,24,98,690,809,244,76,7,29,3,1,7,17,36,52,213,786,94,52,15,40,13,9,10,65,54,279,1137,990,191,46,6,4,2,0,10,60,43,194,432,813,108,12,6,24,20,0,7,3,62,176,547,1497,510,42,14,14,13,1,17,30,13,115,508,847,132,115,15,17,6,1,1,8,17,81,338,897,313,31,22,63,1,4,3,6,55,48,963,1158,341,122,36,14,0,1,4,14,39,111,666,688,72,58,1,41,6,6,7,28,36,160,913,1350,352,118,8,6,4,8,28,9,25,113,337,1192,300,72,81,9,0,4,8,2,27,69,489,822,245,35,25,9,21,6,1,6,32,111,653,1571,335,82,22,33,9,4,15,30,58,194,761,804,237,68,69,3,24,6,5,15,45,247,547,790,277,22,89,25,8,5,3,12,48,113,459,1269,134,66,71,14,0,1,5,15,84,118,1208,1682,281,73,14,56,2,3,28,46,82,103,392,954,772,252,43,69,2,5,15,47,29,187,941,982,446,46,8,104,2,1,3,18,79,218,764,1960,231,222,57,33,12,1,18,8,101,248,1024,1339,397,75,10,35,2,9,35,10,77,191,956,2586,742,96,35,39,14,8,2,12,16,96,455,496,378,145,94,8,24,0,0,10,22,76,344,313,320,90,0;112,67,34,56,253,292,882,2993,5085,1348,335,37,60,28,64,187,86,158,580,1355,5306,1240,377,286,57,21,11,86,72,246,449,2135,3143,1138,175,109,59,82,30,33,78,222,462,2380,4855,1593,396,125,167,27,44,73,154,426,1029,2664,3220,1198,354,242,15,123,37,77,108,322,1134,2345,2909,1863,103,290,69,42,38,56,115,318,527,1688,3783,695,264,253,99,12,15,76,153,355,663,4351,5345,1182,451,69,293,47,35,137,314,432,544,3357,3086,2725,741,327,188,21,32,68,204,256,925,3330,4123,1658,297,144,353,15,38,30,124,474,738,2787,6800,1075,993,240,170,40,19,102,147,572,1216,4068,4981,1722,198,82,230,13,49,191,104,392,967,3938,9509,2345,306,243,140,43,56,37,180,175,667,1968,2513,1827,355,456,71,41,24,31,120,109,497,0,3105,2034,479,0;11494,9727,7642,10315,9598,9326,15769,25239,24185,22997,27477,26580,35460,17356,12341;-1494,-189 -1492,-190 -1490,-193 -1487,-201 -1485,-205 -1485,-209 -1483,-212 -1483,-213 -1485,-213 -1491,-218 -1488,-221 -1481,-220 -1479,-223 -1478,-224 -1476,-217 -1475,-215 -1472,-217 -1471,-221 -1470,-222 -1469,-227 -1460,-225 -1458,-227 -1454,-227 -1451,-229 -1446,-226 -1444,-226 -1442,-223 -1443,-221 -1442,-220 -1439,-219 -1429,-220 -1426,-219 -1424,-213 -1417,-206 -1417,-202 -1412,-199 -1412,-197 -1410,-195 -1412,-192 -1410,-189 -1411,-189 -1425,-200 -1443,-200 -1443,-196 -1445,-195 -1445,-193 -1447,-190 -1455,-188 -1464,-188 -1459,-183 -1459,-180 -1463,-174 -1466,-173 -1467,-170 -1470,-167 -1472,-162 -1475,-158 -1474,-157 -1474,-155 -1476,-154 -1481,-150 -1484,-149 -1489,-146 -1491,-147 -1493,-150 -1491,-155 -1494,-159 -1497,-161 -1501,-160 -1503,-160 -1505,-163 -1508,-163 -1510,-165 -1509,-169 -1513,-168 -1515,-170 -1517,-173 -1519,-174 -1517,-181 -1514,-187 -1512,-188 -1508,-186 -1505,-186 -1503,-179 -1501,-178 -1499,-179 -1496,-172 -1491,-173 -1490,-175 -1493,-179 -1492,-186 -1494,-189
+PE-JUN;Junín;4,0,0,2,6,58,113,246,295,192,38,2,3,0,1,4,15,41,38,114,306,80,40,1,2,0,3,2,51,170,427,766,306,102,29,1,1,0,1,2,14,5,207,136,280,30,3,2,0,0,0,2,1,63,76,435,343,147,13,6,2,3,0,1,26,51,104,270,461,93,20,8,1,0,1,0,12,30,41,243,279,74,2,1,1,0,0,1,7,31,177,621,440,110,56,2,0,1,0,0,3,18,65,224,231,85,33,5,1,0,1,1,9,10,136,533,387,88,29,1,0,1,2,19,2,14,58,103,314,20,28,3,0,1,0,1,17,48,50,319,200,84,13,5,2,0,2,0,4,12,94,529,336,133,28,4,15,3,3,6,38,79,393,580,397,81,67,9,1,0,2,0,3,18,58,229,240,98,22,3,1,0,1,3,11,15,85,223,334,33,7,10,0,0,0,3,12,80,124,899,362,59,4,1,1,1,0,8,43,56,197,699,305,207,97,10,2,2,1,2,13,17,139,528,310,91,20,2,3,0,0,2,3,29,116,268,288,154,92,25,3,3,1,3,3,49,159,428,323,66,7,1,0,2,2,7,6,32,122,334,360,146,33,15,3,1,0,2,1,11,88,134,163,41,31,19,0,4,1,0,12,13,84,253,112,190,39,0;11,2,17,31,76,101,510,1925,1604,648,126,4,19,8,11,60,26,46,223,645,1733,246,320,26,4,2,15,60,75,236,268,1551,1096,516,123,53,3,8,18,21,41,103,550,2146,1523,926,216,76,117,19,28,62,160,255,1473,2042,2117,573,497,75,17,12,23,15,21,71,278,993,997,1004,186,75,11,8,14,29,67,143,368,982,1563,135,137,63,11,4,23,34,125,386,618,3218,1230,608,161,9,12,6,27,81,263,314,831,3958,1427,1192,704,47,23,26,10,32,73,142,639,1987,2046,827,82,49,29,9,11,31,51,165,439,1301,1505,844,637,351,46,6,21,55,58,242,623,1885,1434,425,86,49,7,7,14,50,66,220,743,1844,1862,678,211,53,38,30,12,10,41,50,474,869,923,252,182,149,25,6,6,40,75,152,716,0,987,1229,158,0;5055,3363,3999,5631,7418,3692,7483,12654,17677,11839,10640,9766,11194,6079,6669;-1530,-222 -1530,-225 -1527,-230 -1526,-232 -1524,-232 -1524,-235 -1521,-239 -1514,-241 -1513,-243 -1513,-244 -1511,-247 -1512,-253 -1509,-253 -1504,-248 -1503,-248 -1501,-244 -1501,-241 -1500,-240 -1497,-241 -1491,-240 -1483,-247 -1481,-246 -1480,-246 -1478,-245 -1476,-245 -1472,-248 -1471,-246 -1467,-243 -1469,-238 -1472,-234 -1469,-227 -1469,-226 -1470,-222 -1471,-221 -1472,-217 -1474,-215 -1476,-216 -1478,-224 -1479,-223 -1481,-220 -1487,-221 -1491,-218 -1494,-218 -1501,-213 -1502,-214 -1504,-215 -1506,-217 -1510,-218 -1510,-215 -1511,-215 -1513,-217 -1515,-216 -1517,-218 -1520,-217 -1523,-219 -1525,-219 -1525,-223 -1527,-222 -1530,-222
+PE-ICA;Ica;4,0,7,3,0,3,3,5,0,0,0,0,0,2,4,1,3,3,0,2,0,0,0,0,1,0,0,3,2,6,1,3,1,1,0,1,0,1,1,0,5,5,3,0,0,1,1,1,0,0,3,1,0,7,8,1,2,0,0,2,0,1,2,3,2,1,1,1,1,0,0,0,1,3,3,1,0,0,3,1,0,1,2,2,0,0,2,2,2,0,1,1,4,0,0,0,1,0,4,1,1,0,1,2,2,0,0,1,1,0,0,2,0,3,7,3,0,1,0,3,0,0,2,5,1,2,2,1,3,1,0,0,2,0,2,1,2,2,2,1,1,1,4,3,2,0,2,0,3,3,3,5,2,2,0,0,3,0,8,2,1,1,2,4,5,1,7,4,4,0,0,4,3,5,6,4,2,1,3,0,0,0,2,3,8,0,0,2,4,4,0,3,1,0,7,3,2,4,0,2,3,1,1,1,2,2,3,13,13,5,0,3,2,6,3,1,2,2,4,3,4,1,1,1,4,2,5,11,2,1,9,5,5,9,6,5,0,6,4,3,1,2,6,1,5,8,1,4,3,6,2,1,3,6,5,10,10,4,2,2,5,4,2,4,3,0,1,10,12,1,6,4,4,7,5,11,7,1,2,17,17,11,13,3,2,6,0,0;6,13,8,7,16,14,46,22,10,5,10,13,20,4,18,16,20,20,28,35,23,22,16,13,19,17,15,13,15,24,20,30,11,24,22,14,12,4,12,24,15,20,35,19,22,10,3,28,25,15,14,13,16,15,9,28,29,22,26,19,11,13,13,26,12,17,17,29,31,40,17,32,7,10,29,33,49,11,13,40,17,15,16,16,16,6,15,24,41,19,26,21,29,14,11,19,9,17,22,46,42,25,35,46,37,35,21,19,33,15,23,31,45,25,54,58,56,33,31,43,36,17,27,38,49,42,30,34,44,43,23,29,20,13,15,41,25,28,22,34,40,26,27,30,29,27,16,41,42,23,44,51,47,14,28,15,23,7,35,42,41,19,32,21,32,45,47,26,23,14,29,55,50,16,56,0,49,26,13,0;170,235,224,204,231,258,441,443,689,843,771,643,732,762,619;-1525,-267 -1524,-269 -1524,-272 -1525,-277 -1526,-277 -1526,-276 -1528,-278 -1526,-278 -1526,-284 -1525,-283 -1523,-285 -1522,-286 -1524,-286 -1520,-289 -1518,-293 -1511,-298 -1507,-303 -1505,-305 -1505,-306 -1503,-307 -1504,-308 -1502,-309 -1500,-307 -1499,-304 -1493,-301 -1493,-300 -1493,-298 -1495,-296 -1495,-295 -1497,-295 -1496,-293 -1498,-291 -1501,-293 -1501,-292 -1501,-289 -1502,-288 -1501,-286 -1502,-285 -1501,-282 -1507,-281 -1511,-277 -1509,-269 -1510,-268 -1514,-269 -1516,-268 -1514,-265 -1514,-261 -1519,-260 -1525,-267
+PE-HUV;Huancavelica;1,0,0,0,0,3,8,19,18,29,35,0,0,0,0,0,0,1,5,9,10,2,1,1,0,0,0,0,3,10,46,38,12,5,11,0,1,0,0,0,0,2,15,6,5,8,0,1,0,0,0,0,0,2,0,22,17,13,2,2,0,0,0,0,0,3,4,14,31,4,1,0,0,0,0,0,0,2,1,9,7,6,4,0,0,0,0,0,0,1,19,88,28,21,4,0,0,0,0,0,0,0,14,3,7,4,1,0,0,0,0,0,0,0,17,35,20,14,4,0,0,0,0,0,0,1,7,8,15,5,5,2,0,0,1,0,1,0,3,35,12,4,6,0,0,1,0,0,1,0,4,32,16,25,7,2,3,0,0,0,2,7,51,45,34,4,28,5,0,0,0,0,0,1,5,14,6,4,4,2,2,0,0,0,2,0,8,6,14,13,2,13,1,0,0,0,1,5,18,70,10,18,1,1,0,0,0,0,3,2,41,78,37,46,62,0,0,0,0,0,0,2,10,17,1,10,11,6,0,1,0,0,0,6,11,35,21,55,63,5,0,0,0,0,0,2,15,22,12,1,6,3,0,0,0,0,0,7,13,38,54,14,5,0,1,0,0,0,0,0,10,17,9,2,18,23,3,0,0,0,2,1,5,22,15,65,1,0;0,0,0,0,3,1,37,186,133,77,27,1,2,0,0,0,1,2,21,52,86,40,45,3,2,0,0,1,0,10,9,171,44,44,42,17,2,3,0,1,0,7,44,133,117,181,41,17,16,0,3,2,5,32,232,217,290,55,157,13,0,0,0,0,1,3,12,78,50,73,24,20,0,2,0,5,10,10,30,28,92,38,42,80,10,1,0,1,0,36,78,339,94,80,23,10,0,0,0,1,13,20,154,459,195,172,332,2,2,1,0,1,2,6,43,61,40,62,57,37,8,1,0,0,2,14,54,140,133,342,207,65,11,1,1,1,0,15,57,74,68,25,34,9,0,2,0,0,3,29,75,152,223,128,45,9,0,0,1,1,1,6,42,49,40,31,114,114,3,0,0,0,5,14,41,0,90,323,11,0;465,252,340,546,1022,261,676,1326,2717,645,1891,617,1324,748,954;-1514,-261 -1514,-265 -1516,-268 -1514,-269 -1510,-268 -1509,-269 -1511,-277 -1507,-281 -1501,-282 -1495,-282 -1495,-273 -1498,-268 -1497,-267 -1494,-267 -1492,-264 -1488,-263 -1487,-261 -1486,-261 -1487,-252 -1492,-247 -1488,-246 -1487,-243 -1491,-240 -1494,-241 -1501,-241 -1501,-244 -1503,-248 -1504,-248 -1509,-253 -1512,-253 -1510,-256 -1513,-258 -1512,-260 -1513,-261 -1514,-261
+PE-MDD;Madre de Dios;0,0,0,0,0,0,32,176,656,80,16,1,1,1,0,1,2,2,10,58,730,73,10,0,0,1,1,1,3,3,66,414,1051,93,17,1,0,0,2,1,3,4,18,165,400,57,11,0,0,0,0,0,4,11,15,210,875,180,8,1,0,1,3,0,4,7,18,130,741,86,11,0,0,1,1,0,0,0,2,48,351,137,10,1,0,0,0,3,5,25,32,444,500,59,11,1,0,0,0,4,8,2,32,196,376,47,10,0,1,0,2,0,7,6,40,259,769,95,5,0,1,1,1,13,3,8,14,154,588,33,50,1,0,0,2,10,0,3,20,233,389,186,17,3,1,3,0,4,1,14,11,173,488,188,39,4,6,1,2,4,9,35,105,399,723,101,5,13,1,1,0,0,2,4,51,215,570,234,7,7,0,0,0,2,10,12,59,261,708,52,10,5,0,0,1,4,9,12,47,730,586,125,10,0,4,0,8,4,10,14,21,245,696,491,60,1,2,3,0,0,8,6,60,366,774,301,11,10,5,1,3,2,7,28,52,260,855,51,143,4,5,1,0,4,4,11,61,465,597,238,56,4,5,3,4,2,2,15,71,534,1145,243,88,4,9,6,1,0,2,5,52,136,437,142,8,4,8,0,0,0,10,3,19,104,248,78,40,0;5,10,13,18,34,42,212,783,2664,522,49,14,14,4,6,66,33,31,124,585,1862,145,251,19,0,0,7,40,4,26,74,828,1562,551,62,10,6,13,7,19,13,58,113,542,1600,793,231,47,27,11,16,30,65,177,481,1456,2263,427,126,45,26,12,4,6,11,48,244,666,1856,1138,72,31,1,1,4,21,37,91,271,796,2329,283,160,24,8,10,12,28,29,73,263,2402,2180,473,81,7,32,0,23,29,95,68,96,1594,2324,1533,295,13,21,10,4,7,58,28,221,1353,2984,1136,105,72,36,5,19,42,41,115,192,978,2858,316,664,30,24,8,19,40,32,54,235,1787,2163,979,217,24,23,14,31,33,26,128,277,2256,3225,1774,176,57,16,11,6,6,26,32,308,661,1664,523,154,18,32,7,5,12,53,33,123,0,1362,428,322,0;4366,3140,3164,3442,5124,4114,8060,11242,12482,12036,10387,11155,16824,7036,4531;-1377,-260 -1377,-258 -1374,-254 -1373,-250 -1381,-234 -1391,-219 -1399,-219 -1406,-222 -1409,-221 -1410,-219 -1412,-220 -1412,-199 -1417,-202 -1417,-206 -1423,-211 -1426,-219 -1429,-220 -1439,-219 -1443,-221 -1442,-223 -1445,-226 -1448,-235 -1447,-239 -1445,-241 -1442,-242 -1442,-245 -1439,-246 -1441,-249 -1439,-254 -1434,-256 -1431,-254 -1428,-258 -1423,-259 -1422,-265 -1420,-265 -1417,-262 -1410,-263 -1406,-263 -1392,-267 -1377,-260
+PE-CUS;Cusco;3,0,0,0,3,20,100,138,249,179,40,0,0,0,0,2,3,40,30,82,157,43,18,2,2,0,1,8,25,40,379,573,260,72,34,2,0,0,1,1,23,3,158,85,183,60,4,1,0,0,0,0,5,31,51,298,277,119,24,6,2,1,0,0,10,56,54,123,254,71,2,0,0,0,0,0,3,18,45,184,197,54,12,2,0,0,0,0,3,23,93,429,281,65,58,0,0,0,0,1,5,11,65,125,163,46,10,1,0,0,0,0,9,11,101,326,175,55,15,0,2,0,0,1,1,7,44,93,210,27,7,0,0,0,0,0,4,22,21,190,94,62,18,6,0,0,0,0,2,8,71,194,170,129,19,4,1,0,0,2,6,32,185,244,321,33,55,4,0,0,0,2,2,9,72,144,113,104,12,4,1,0,0,2,9,18,89,87,231,5,4,4,1,0,0,0,10,26,74,471,231,108,8,0,0,0,0,8,27,18,140,459,268,138,127,1,1,0,0,0,2,9,64,148,133,58,6,3,1,0,0,0,9,28,96,197,231,229,129,19,5,1,0,1,0,31,54,147,132,55,8,4,0,0,0,0,0,15,73,162,251,100,8,3,1,0,0,2,1,1,61,63,83,14,17,6,1,7,1,0,2,16,61,85,129,242,4,0;2,4,7,0,53,41,431,1199,872,407,93,3,9,7,2,12,11,32,216,463,930,132,168,7,13,3,3,9,19,132,136,1034,482,271,166,42,9,5,2,4,3,54,306,850,935,725,124,28,11,1,11,16,48,126,941,1066,1391,230,247,27,12,5,2,5,3,59,296,689,508,499,90,27,3,0,3,10,19,120,391,430,1166,88,72,94,9,1,7,12,38,124,320,1896,1026,556,61,9,11,9,4,32,155,159,553,2575,1286,723,666,22,12,7,4,4,13,66,240,696,607,330,58,18,3,3,4,9,36,156,476,772,829,1133,657,119,37,3,2,12,28,121,308,705,660,231,63,23,1,2,4,11,11,147,359,935,1069,495,84,22,11,4,2,12,16,21,252,446,728,209,121,75,16,19,5,5,49,52,282,0,643,919,58,0;3112,1989,2310,3045,4115,2195,4917,7880,12137,4312,8371,4306,6062,3683,4015;-1408,-263 -1417,-262 -1420,-265 -1421,-265 -1422,-264 -1423,-259 -1428,-258 -1431,-254 -1434,-256 -1439,-254 -1441,-249 -1439,-246 -1442,-245 -1442,-242 -1445,-241 -1448,-236 -1445,-227 -1445,-226 -1451,-229 -1454,-227 -1458,-227 -1460,-225 -1469,-227 -1472,-234 -1469,-238 -1467,-243 -1471,-246 -1472,-248 -1476,-245 -1478,-245 -1480,-246 -1476,-252 -1471,-258 -1466,-268 -1462,-269 -1458,-268 -1443,-276 -1441,-280 -1442,-285 -1446,-289 -1450,-291 -1450,-295 -1448,-296 -1443,-296 -1441,-298 -1440,-294 -1439,-293 -1435,-299 -1436,-302 -1432,-303 -1430,-302 -1429,-300 -1426,-302 -1424,-301 -1423,-303 -1423,-308 -1421,-309 -1419,-306 -1420,-300 -1419,-296 -1422,-294 -1419,-292 -1419,-288 -1416,-282 -1417,-281 -1416,-279 -1417,-277 -1414,-277 -1414,-274 -1411,-271 -1407,-266 -1408,-265 -1408,-263
+PE-APU;Apurímac;0,0,0,0,0,4,21,8,31,45,37,0,0,0,0,0,2,4,4,13,6,9,3,3,1,0,0,1,3,16,76,99,87,11,22,0,0,0,0,0,2,1,9,18,37,66,0,1,0,0,0,0,3,4,12,37,20,35,15,2,0,0,0,0,1,4,9,37,83,14,2,0,0,0,0,0,1,5,6,38,46,40,14,0,0,0,0,0,0,1,26,73,47,51,46,0,0,0,0,0,0,1,11,8,15,2,6,0,0,0,0,0,1,0,14,25,11,13,1,0,0,0,0,2,5,0,4,22,36,20,13,1,0,0,0,1,0,3,18,64,29,7,21,0,0,0,0,0,1,0,6,23,17,28,17,2,2,0,0,0,3,7,27,47,48,14,41,2,0,0,0,0,0,0,2,13,13,28,8,1,0,0,0,0,3,2,10,1,12,4,2,7,0,0,0,0,0,1,6,72,42,17,1,0,0,0,0,0,6,23,78,52,51,37,76,0,0,0,0,1,0,2,15,16,11,10,13,1,0,0,0,1,3,1,10,44,72,238,154,21,0,0,0,0,0,0,1,19,12,6,0,1,0,0,0,0,0,2,18,59,51,30,13,0,1,0,2,0,0,1,10,2,15,3,25,9,0,0,0,0,2,1,21,18,49,203,2,0;2,0,1,0,2,4,29,158,122,102,26,1,0,0,2,4,2,9,46,126,140,87,65,4,0,0,0,9,2,16,42,276,84,52,134,9,2,0,0,0,1,9,75,109,132,156,90,7,6,0,5,3,7,40,138,206,239,85,286,5,0,1,0,0,0,6,13,61,67,141,31,10,0,0,0,2,7,13,54,24,76,20,45,72,0,1,0,0,1,31,46,313,203,120,18,5,5,1,1,6,23,95,248,321,287,155,371,2,1,3,0,2,2,11,91,80,56,111,52,14,3,2,1,7,19,12,95,180,357,1004,615,146,0,0,1,5,3,9,19,95,82,56,19,3,0,1,0,1,3,13,55,237,197,152,42,8,3,0,1,1,1,4,34,31,81,17,71,35,5,2,2,0,5,4,81,0,173,752,21,0;447,485,624,581,1020,330,599,1525,2978,784,4878,557,1411,581,2016;-1464,-269 -1465,-270 -1469,-269 -1474,-265 -1475,-264 -1476,-266 -1476,-270 -1474,-275 -1475,-276 -1470,-285 -1471,-289 -1470,-292 -1471,-295 -1471,-296 -1470,-297 -1467,-294 -1465,-295 -1461,-293 -1457,-295 -1455,-293 -1449,-294 -1450,-291 -1446,-289 -1442,-285 -1441,-280 -1442,-277 -1444,-274 -1446,-274 -1458,-268 -1461,-269 -1464,-269
+PE-AYA;Ayacucho;3,0,0,0,0,15,28,64,46,46,45,2,2,0,0,0,1,27,13,44,37,13,9,1,0,0,0,0,9,24,154,242,56,22,12,0,0,0,0,0,2,5,74,56,61,33,0,1,0,0,0,0,0,9,26,114,24,16,16,4,0,0,0,0,2,4,37,92,82,47,9,0,0,0,0,0,0,6,20,62,49,21,11,2,0,0,0,0,1,0,41,136,63,30,29,1,0,0,0,1,0,1,26,49,38,18,6,2,0,0,0,0,0,1,54,142,56,16,16,0,0,0,0,0,0,5,15,26,68,14,19,1,0,0,0,0,1,7,16,74,10,7,15,2,1,1,0,0,0,4,27,115,39,47,8,6,1,0,0,0,3,13,112,80,52,24,64,4,0,0,0,0,0,1,16,63,17,25,22,8,0,0,0,0,0,4,25,43,66,14,3,7,1,0,0,0,1,9,32,229,53,9,5,7,0,0,0,1,13,14,66,156,55,78,84,7,0,0,0,0,3,2,28,56,9,28,21,3,1,1,0,0,1,15,36,111,59,117,68,21,0,0,0,0,0,11,29,102,38,4,8,4,0,0,0,0,2,23,36,49,110,19,15,3,0,0,0,0,0,1,34,19,22,7,22,32,3,0,0,0,4,2,23,46,20,111,9,0;0,1,3,0,5,16,172,540,240,148,65,5,2,1,4,2,1,16,93,173,351,79,105,6,2,4,1,2,6,34,108,436,180,89,64,26,9,1,1,0,4,17,177,428,253,206,88,21,43,1,3,1,9,67,458,320,305,113,309,32,2,0,0,0,3,11,75,211,103,182,87,47,6,1,2,5,1,35,121,226,399,55,77,46,10,2,2,3,9,45,130,957,235,153,44,16,6,1,2,8,43,93,293,1086,314,348,480,24,1,10,1,1,4,20,104,271,182,142,80,20,7,3,4,5,12,79,209,380,297,608,272,76,3,1,0,3,8,67,128,387,146,45,47,25,6,2,5,1,5,154,202,331,397,154,54,15,13,3,1,6,5,18,167,115,163,30,110,151,6,10,3,4,13,30,125,0,249,498,12,0;1195,833,952,1205,1661,721,1912,3232,5275,1689,3797,1645,2551,1550,1855;-1487,-244 -1488,-246 -1492,-247 -1487,-252 -1486,-261 -1487,-261 -1488,-263 -1492,-264 -1494,-267 -1498,-268 -1498,-269 -1495,-273 -1495,-282 -1501,-282 -1501,-286 -1502,-288 -1501,-289 -1501,-293 -1498,-291 -1496,-293 -1496,-295 -1495,-295 -1495,-296 -1493,-298 -1493,-301 -1495,-302 -1488,-304 -1488,-306 -1486,-307 -1486,-310 -1484,-310 -1482,-309 -1481,-309 -1481,-313 -1478,-309 -1478,-307 -1477,-307 -1474,-309 -1469,-308 -1466,-308 -1465,-306 -1463,-306 -1460,-303 -1460,-300 -1460,-297 -1459,-296 -1458,-296 -1457,-295 -1461,-293 -1465,-295 -1467,-294 -1470,-297 -1471,-296 -1471,-295 -1470,-292 -1471,-289 -1470,-285 -1475,-276 -1474,-275 -1476,-270 -1476,-266 -1475,-264 -1474,-265 -1469,-269 -1465,-270 -1464,-269 -1467,-266 -1471,-258 -1476,-252 -1480,-246 -1481,-246 -1483,-247 -1487,-244
+PE-ARE;Arequipa;3,0,0,4,3,2,10,20,26,37,20,5,1,0,3,7,11,0,2,0,11,10,18,4,1,0,5,5,2,18,5,15,10,7,6,8,0,0,0,5,1,1,3,5,8,10,11,3,0,1,1,1,0,3,2,12,4,1,19,5,0,0,2,2,4,1,3,11,11,18,13,0,0,0,4,6,0,1,2,18,14,33,7,2,0,0,1,1,2,9,2,4,11,5,15,2,0,0,6,9,1,0,1,1,0,4,2,3,1,1,1,5,1,0,1,18,7,25,5,0,0,0,0,6,1,1,3,25,34,47,32,1,1,0,2,11,6,6,4,14,1,2,8,2,5,0,1,7,0,1,1,8,13,10,4,13,5,0,3,6,2,1,10,14,14,8,9,2,0,0,1,4,1,2,11,20,10,8,21,11,0,0,0,1,1,9,7,10,64,11,20,10,3,0,4,7,1,3,1,13,11,33,10,4,1,0,2,9,1,3,21,26,19,10,17,8,1,1,3,5,0,6,8,19,23,25,23,6,2,1,1,1,2,3,2,14,13,20,24,6,2,1,0,3,0,3,5,14,14,2,12,11,1,0,1,0,6,3,6,8,5,20,8,4,2,1,4,3,0,0,6,9,7,18,20,17,0,3,2,5,5,10,7,43,25,60,2,0;1,2,34,38,35,19,22,86,44,107,30,6,5,3,31,40,25,27,29,101,153,179,95,23,5,7,40,47,35,25,21,45,19,36,55,35,9,2,25,54,26,19,10,34,57,38,33,33,31,3,41,30,20,13,39,42,44,39,38,9,0,6,29,34,29,26,36,71,53,42,52,40,9,2,24,28,25,22,22,57,211,62,87,29,13,2,49,20,14,27,18,62,32,69,21,31,6,2,22,44,30,22,59,87,82,42,67,36,6,6,54,23,32,43,62,108,123,96,80,42,10,5,23,36,20,31,32,72,75,101,104,13,7,3,26,41,17,26,20,99,53,28,47,40,21,6,31,38,35,24,46,83,40,78,31,21,17,7,36,21,24,9,42,41,71,62,74,72,31,20,43,34,33,85,38,0,125,319,8,0;424,711,370,340,349,418,1150,769,950,1221,1070,909,889,1026,1440;-1421,-309 -1423,-309 -1423,-303 -1424,-301 -1426,-302 -1429,-300 -1430,-302 -1432,-303 -1436,-302 -1435,-299 -1439,-293 -1440,-294 -1441,-298 -1443,-296 -1448,-296 -1450,-295 -1449,-294 -1455,-293 -1457,-295 -1459,-296 -1460,-297 -1460,-300 -1460,-303 -1463,-306 -1465,-306 -1466,-308 -1469,-308 -1474,-309 -1477,-307 -1478,-307 -1478,-309 -1481,-313 -1481,-309 -1482,-309 -1484,-310 -1486,-310 -1486,-307 -1488,-306 -1488,-304 -1491,-303 -1495,-302 -1499,-304 -1500,-307 -1502,-309 -1490,-314 -1488,-317 -1482,-319 -1474,-325 -1469,-326 -1465,-328 -1458,-331 -1455,-333 -1449,-335 -1442,-341 -1439,-341 -1437,-344 -1430,-346 -1426,-342 -1429,-339 -1428,-336 -1426,-335 -1424,-330 -1419,-330 -1419,-327 -1417,-325 -1417,-322 -1416,-320 -1418,-316 -1418,-315 -1421,-309
+PE-MOQ;Moquegua;0,0,0,0,1,1,0,0,2,1,0,0,0,0,0,0,0,0,4,0,1,2,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,1,1,0,1,2,1,0,1,0,0,0,0,1,0,0,2,0,2,2,3,0,0,0,0,0,2,3,2,2,1,0,0,0,0,0,0,0,0,0,2,3,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,2,1,1,1,4,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,1,1,4,5,6,4,4,2,0,0,0,0,0,4,0,0,4,4,0,3,1,0,0,0,0,0,0,0,3,0,2,0,0,0,0,0,0,3,1,0,0,3,10,0,0,2,0,0,1,0,1,2,4,3,0,3,0,0,1,0,3,0,1,5,8,4,8,2,0,3,0,1,0,0,1,0,0,0,1,0,1,7,0,0,0,0,0,4,2,2,2,0,0,2,0,0,1,1,3,5,10,8,1,0,0,2,0,0,0,1,0,8,7,10,12,0,0,3,0,0,0,0,1,0,1,3,2,2,0,1,4,0,0,0,1,3,3,9,1,0,0,0,4,0,0,1,3,2,2,5,2,0,0,0,0,1,2,0,3,3,4,13,0,0;0,0,0,1,0,1,5,10,7,3,4,3,1,1,1,1,4,9,6,22,33,30,7,3,1,1,1,2,7,7,13,8,11,4,8,8,12,6,0,1,0,3,5,1,5,5,9,5,3,2,0,0,2,3,7,8,9,20,24,3,0,2,1,0,2,1,9,9,24,8,1,13,0,1,2,0,11,3,4,18,24,33,10,11,2,14,1,1,0,3,2,6,8,20,2,3,0,35,0,3,2,1,12,39,19,29,15,2,1,6,1,1,1,10,20,19,30,38,5,6,7,18,0,0,2,0,11,19,33,39,35,3,0,0,4,2,3,1,10,7,15,52,27,6,1,2,9,2,3,2,8,11,3,78,7,2,4,19,1,1,1,4,3,13,6,47,13,5,1,3,8,0,0,6,8,0,11,76,1,0;34,118,71,52,81,70,237,126,305,319,306,244,243,222,261;-1416,-320 -1417,-322 -1417,-325 -1419,-327 -1419,-330 -1424,-330 -1426,-335 -1428,-335 -1429,-336 -1429,-339 -1426,-342 -1430,-346 -1427,-349 -1427,-353 -1427,-354 -1423,-357 -1421,-355 -1418,-354 -1413,-345 -1411,-344 -1409,-342 -1409,-338 -1407,-336 -1406,-336 -1404,-337 -1405,-338 -1404,-340 -1402,-339 -1400,-335 -1400,-333 -1403,-333 -1407,-328 -1406,-325 -1409,-321 -1411,-320 -1416,-320
+PE-TAC;Tacna;0,1,0,0,0,0,0,4,0,2,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,2,0,0,0,2,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,3,0,2,1,1,0,0,0,0,0,0,3,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,1,0,0,0,0,0,0,3,2,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1,1,0,3,2,1,0,0,0,3,0,2,0,0,1,0,0,0,0,0,2,0,0,0,0,3,0,3,1,2,0,1,0,0,0,1,0,1,3,2,1,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,3,0,0,2,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,2,1,0,0,1,0,2,0,1,0,0,0,0,1,1,0,0,2,0,0,0,0,1,0,0,1,2,0,3,2,1,2,1,0,2,1,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,2,2,1,0,0,1,0,0,0,0,0,0,3,0,1,0,0,0,0,1,1,0,0,0,0,3,4,1,0;0,3,0,3,0,5,5,1,2,6,2,3,2,7,2,8,2,4,2,5,3,16,1,1,10,9,9,5,1,4,2,10,3,4,1,2,2,3,2,2,2,1,1,6,6,4,5,1,2,7,2,3,4,2,3,8,18,7,6,3,0,6,3,1,2,2,5,7,7,2,4,9,1,2,4,4,6,2,8,11,16,3,5,3,3,1,3,9,2,5,4,3,10,6,2,2,5,2,2,11,3,3,3,1,4,2,6,1,4,2,3,1,3,3,2,6,10,6,2,4,5,6,4,6,6,4,7,4,3,15,6,3,1,5,4,6,2,2,4,7,4,4,3,2,1,0,1,2,1,5,2,11,4,13,2,1,5,0,5,1,1,1,6,2,5,6,6,8,5,2,7,4,4,10,14,0,8,15,0,0;30,53,60,35,65,48,116,91,110,109,118,100,85,90,117;-1402,-339 -1404,-340 -1405,-338 -1404,-337 -1406,-336 -1407,-336 -1409,-338 -1409,-342 -1411,-344 -1413,-345 -1418,-354 -1421,-355 -1423,-357 -1419,-358 -1408,-367 -1400,-366 -1397,-364 -1395,-361 -1396,-354 -1392,-353 -1389,-350 -1390,-347 -1392,-346 -1394,-346 -1399,-344 -1402,-339
+PE-LOR;Loreto;44,9,5,19,0,3,35,348,280,141,49,46,94,31,1,4,40,17,90,247,328,77,46,30,68,13,5,3,29,10,178,581,393,96,54,18,58,21,2,7,42,48,151,345,408,123,11,5,13,102,5,3,25,43,205,603,456,182,30,14,20,28,10,11,10,22,101,481,362,114,82,111,4,4,6,6,18,6,85,202,304,163,69,52,78,6,11,16,20,25,98,694,392,194,39,36,86,5,11,9,3,20,45,438,275,59,27,7,27,10,4,9,24,27,147,511,554,168,78,20,15,10,6,46,1,15,27,204,364,148,27,43,17,8,2,15,3,20,51,200,184,89,24,12,1,21,0,3,3,7,47,256,386,175,61,41,48,2,10,1,6,28,94,437,332,182,82,30,15,20,1,7,2,22,122,280,168,126,49,56,25,50,7,5,4,26,135,234,380,91,39,2,6,3,5,9,7,37,61,484,363,130,44,13,78,20,19,35,16,76,100,270,257,180,38,19,21,16,2,5,14,14,122,425,290,143,22,19,78,16,0,1,5,14,69,391,456,143,123,67,34,22,7,5,4,34,108,420,479,270,67,11,25,11,11,17,1,17,104,462,768,231,42,28,40,8,5,1,4,4,30,104,172,104,39,29,2,16,2,1,1,8,26,66,126,79,8,0;60,90,15,65,179,170,795,2183,2487,963,295,104,78,39,49,239,57,157,426,1236,1857,834,164,266,86,32,24,44,60,158,417,1437,1340,540,135,89,23,108,37,44,53,131,230,1265,2097,981,356,161,219,22,72,47,96,216,534,1978,1710,975,531,155,112,111,62,44,62,181,866,1416,1165,894,163,222,65,245,84,30,46,201,736,1140,1822,489,163,73,44,62,16,45,100,200,488,2097,1565,518,271,68,432,114,100,235,294,630,573,2648,1565,1195,309,141,145,71,39,36,116,205,760,2240,1672,798,187,103,478,73,17,25,71,237,573,1721,2419,694,565,406,248,121,81,23,77,233,731,2648,2303,1374,344,98,101,66,32,72,60,218,787,2853,4212,1419,289,182,340,38,30,54,86,153,422,1229,1135,634,248,307,53,57,62,26,82,146,356,0,1502,939,138,0;7406,5402,4362,5486,6555,5298,9908,10945,15955,12086,14451,16333,19906,9036,6518;-1554,-108 -1552,-109 -1551,-109 -1550,-111 -1542,-113 -1536,-116 -1534,-120 -1528,-119 -1526,-122 -1524,-123 -1520,-122 -1515,-123 -1511,-121 -1510,-125 -1511,-127 -1510,-135 -1515,-138 -1518,-136 -1521,-136 -1520,-142 -1523,-145 -1524,-148 -1522,-152 -1522,-155 -1520,-158 -1518,-158 -1517,-160 -1519,-162 -1519,-165 -1520,-166 -1519,-168 -1520,-173 -1519,-174 -1513,-168 -1509,-169 -1510,-165 -1508,-163 -1505,-163 -1503,-160 -1501,-160 -1497,-161 -1494,-159 -1491,-155 -1493,-151 -1490,-146 -1488,-146 -1479,-151 -1479,-149 -1479,-147 -1475,-146 -1478,-143 -1475,-140 -1475,-139 -1474,-136 -1470,-133 -1465,-132 -1463,-130 -1462,-128 -1465,-122 -1463,-117 -1460,-113 -1459,-109 -1457,-106 -1458,-103 -1455,-101 -1453,-101 -1447,-96 -1444,-95 -1438,-90 -1435,-89 -1431,-90 -1429,-88 -1419,-87 -1415,-83 -1411,-84 -1408,-82 -1406,-83 -1404,-86 -1403,-86 -1402,-85 -1399,-87 -1399,-84 -1403,-80 -1404,-78 -1406,-76 -1409,-77 -1414,-76 -1401,-56 -1401,-53 -1403,-54 -1404,-51 -1406,-51 -1406,-49 -1408,-50 -1411,-48 -1412,-49 -1414,-46 -1417,-44 -1418,-45 -1420,-44 -1420,-45 -1422,-45 -1424,-47 -1426,-47 -1428,-48 -1429,-45 -1430,-46 -1430,-45 -1434,-44 -1434,-43 -1439,-47 -1442,-47 -1443,-49 -1447,-49 -1452,-47 -1454,-48 -1455,-48 -1458,-48 -1463,-44 -1462,-41 -1463,-35 -1467,-36 -1471,-34 -1470,-30 -1472,-26 -1474,-24 -1477,-24 -1480,-20 -1481,-21 -1485,-19 -1485,-16 -1487,-14 -1488,-11 -1492,-7 -1494,-6 -1496,-3 -1499,-4 -1503,0 -1507,-3 -1512,-2 -1512,-4 -1510,-5 -1505,-11 -1505,-15 -1504,-19 -1506,-19 -1507,-18 -1511,-31 -1521,-42 -1533,-51 -1557,-60 -1556,-68 -1553,-72 -1553,-76 -1551,-80 -1552,-85 -1551,-88 -1556,-96 -1554,-101 -1554,-106 -1554,-108
+HEAT;1,54,28 1,55,4 2,51,44 2,52,79 2,53,8 2,54,169 2,58,7 3,51,6 3,52,269 3,53,96 3,54,99 3,55,44 3,59,4 4,54,93 4,55,44 4,56,15 4,58,20 4,59,81 5,47,7 5,48,7 5,49,21 5,50,8 5,52,11 5,53,88 5,54,79 5,55,74 5,56,5 5,58,25 5,59,12 6,46,31 6,47,195 6,48,59 6,49,25 6,50,36 6,51,9 6,52,18 6,53,67 6,54,14 6,55,84 6,56,27 7,44,47 7,45,97 7,46,68 7,47,24 7,48,45 7,49,18 7,50,19 7,51,11 7,52,35 7,53,32 7,54,26 7,55,41 7,56,4 8,42,111 8,43,34 8,44,153 8,45,64 8,46,40 8,47,62 8,48,40 8,49,28 8,50,10 8,51,13 8,52,12 8,53,21 8,54,27 9,41,3 9,42,60 9,43,40 9,44,4 9,45,5 9,46,32 9,47,5 9,48,26 9,49,47 9,50,35 9,51,17 9,52,43 9,53,30 9,54,8 10,40,50 10,41,9 10,42,4 10,43,5 10,44,10 10,45,10 10,46,43 10,47,25 10,48,3 10,49,45 10,50,56 10,51,81 10,52,59 10,53,67 11,37,9 11,38,126 11,39,34 11,40,24 11,41,20 11,42,13 11,43,9 11,44,20 11,45,11 11,46,19 11,47,8 11,48,18 11,49,37 11,50,94 11,51,67 11,52,44 12,36,5 12,37,20 12,38,28 12,39,8 12,40,9 12,41,5 12,42,27 12,43,17 12,44,13 12,45,19 12,46,17 12,47,11 12,48,16 12,49,32 12,50,159 12,51,45 12,52,39 12,53,17 12,54,16 12,56,5 13,33,3 13,37,5 13,38,6 13,40,25 13,41,25 13,42,35 13,43,16 13,44,24 13,45,29 13,46,22 13,47,18 13,48,35 13,49,30 13,50,80 13,53,4 13,54,22 13,55,35 14,31,7 14,33,6 14,34,4 14,35,3 14,36,20 14,37,24 14,38,42 14,39,39 14,40,43 14,41,26 14,42,19 14,43,17 14,44,8 14,45,21 14,46,39 14,47,20 14,48,20 14,49,32 14,50,14 14,51,7 14,54,19 14,55,37 14,56,11 14,57,4 14,60,3 15,29,16 15,30,16 15,31,16 15,32,4 15,33,21 15,34,51 15,35,17 15,36,18 15,37,26 15,38,3 15,39,51 15,40,20 15,41,43 15,42,13 15,43,29 15,44,66 15,45,64 15,46,19 15,47,19 15,48,14 15,49,42 15,51,9 15,54,7 15,55,11 15,56,3 16,28,4 16,29,17 16,30,6 16,31,11 16,32,28 16,33,6 16,34,7 16,35,4 16,36,19 16,37,14 16,38,20 16,39,15 16,40,34 16,41,10 16,43,6 16,46,11 16,47,30 16,48,4 16,49,3 16,50,73 16,51,56 16,53,3 16,54,8 16,55,25 16,59,3 17,26,11 17,28,4 17,29,9 17,30,6 17,31,31 17,32,31 17,33,44 17,34,11 17,35,19 17,36,23 17,37,18 17,38,10 17,39,29 17,40,24 17,41,10 17,44,12 17,45,58 17,46,6 17,47,8 17,48,9 17,49,66 17,50,240 17,51,16 17,53,3 17,55,5 17,57,3 17,58,3 18,25,39 18,26,5 18,28,19 18,29,11 18,30,26 18,31,8 18,32,4 18,33,16 18,34,10 18,35,19 18,36,21 18,37,42 18,38,20 18,39,32 18,41,10 18,42,12 18,43,37 18,44,155 18,45,209 18,46,153 18,47,106 18,48,50 18,49,70 18,50,95 18,52,51 18,53,16 18,54,12 18,56,12 19,23,4 19,26,5 19,27,20 19,28,33 19,29,5 19,32,20 19,33,17 19,34,69 19,35,43 19,36,37 19,37,14 19,38,3 19,39,30 19,40,93 19,41,169 19,42,84 19,43,215 19,44,345 19,45,234 19,46,401 19,47,176 19,48,104 19,49,22 19,50,86 19,51,156 19,52,106 19,53,4 19,54,60 19,55,6 19,57,3 19,60,3 20,21,20 20,22,5 20,23,3 20,25,34 20,26,76 20,27,8 20,28,6 20,29,3 20,30,3 20,31,3 20,32,49 20,33,63 20,34,115 20,35,29 20,36,36 20,37,43 20,38,43 20,39,173 20,40,175 20,41,43 20,43,233 20,44,371 20,45,670 20,46,198 20,47,191 20,48,59 20,49,162 20,50,364 20,51,136 20,52,56 20,54,18 20,55,4 20,56,3 20,60,4 21,18,13 21,19,94 21,20,26 21,21,4 21,22,5 21,23,85 21,24,22 21,25,42 21,28,12 21,29,5 21,30,8 21,31,20 21,32,21 21,33,51 21,34,51 21,35,17 21,36,54 21,37,134 21,38,165 21,39,60 21,40,38 21,43,28 21,44,231 21,45,414 21,46,175 21,47,106 21,48,113 21,49,316 21,50,243 21,51,93 21,53,6 21,54,3 21,62,10 21,63,10 22,17,3 22,18,51 22,19,41 22,20,3 22,21,12 22,22,48 22,23,33 22,24,31 22,25,3 22,26,14 22,27,10 22,28,12 22,29,13 22,30,34 22,31,16 22,32,47 22,33,50 22,34,44 22,35,58 22,36,128 22,37,40 22,38,4 22,47,9 22,48,230 22,49,130 22,50,183 22,51,57 22,52,6 22,53,5 22,55,5 22,61,4 23,15,5 23,16,8 23,17,17 23,18,10 23,20,9 23,21,37 23,22,13 23,25,3 23,26,33 23,27,34 23,28,50 23,29,11 23,30,22 23,31,29 23,32,19 23,33,30 23,34,57 23,35,27 23,36,20 23,37,110 23,38,143 23,39,67 23,40,35 23,41,9 23,42,23 23,44,5 23,47,144 23,48,67 23,49,32 23,50,18 23,51,8 23,52,18 23,53,20 23,54,3 23,61,6 24,15,4 24,18,15 24,19,17 24,20,19 24,23,3 24,24,7 24,25,25 24,26,35 24,27,10 24,28,24 24,29,27 24,30,28 24,32,8 24,33,106 24,34,173 24,35,276 24,36,275 24,37,181 24,38,518 24,39,410 24,40,322 24,41,149 24,42,22 24,44,20 24,45,32 24,46,20 24,47,65 24,48,103 24,54,5 25,14,13 25,15,8 25,16,4 25,17,10 25,18,48 25,19,10 25,23,6 25,24,5 25,25,29 25,26,9 25,27,15 25,28,29 25,29,14 25,30,101 25,31,12 25,32,38 25,33,246 25,34,308 25,35,310 25,36,341 25,37,348 25,38,380 25,39,391 25,40,322 25,41,405 25,42,76 25,43,18 25,44,52 25,45,83 25,46,131 25,47,64 25,48,17 25,49,6 25,54,8 25,56,8 26,14,33 26,17,10 26,18,14 26,22,12 26,23,11 26,24,39 26,25,30 26,26,5 26,27,6 26,28,11 26,29,158 26,30,146 26,31,55 26,32,322 26,33,291 26,34,236 26,35,163 26,36,219 26,37,258 26,38,437 26,39,183 26,40,346 26,41,411 26,42,112 26,43,33 26,44,59 26,45,3 26,46,11 26,50,3 26,55,7 26,65,4 26,72,9 26,73,6 27,11,6 27,15,4 27,16,7 27,21,5 27,22,8 27,23,20 27,24,34 27,25,16 27,26,3 27,27,6 27,28,121 27,29,346 27,30,101 27,32,31 27,33,6 27,36,13 27,37,96 27,38,138 27,39,193 27,40,366 27,41,35 27,42,27 27,48,3 27,50,49 27,51,9 27,59,3 27,67,4 27,68,5 27,72,7 28,10,3 28,11,4 28,12,6 28,16,3 28,18,9 28,19,21 28,20,19 28,21,26 28,22,12 28,23,12 28,24,3 28,25,40 28,26,19 28,27,189 28,28,131 28,29,261 28,30,85 28,31,58 28,35,18 28,36,163 28,37,53 28,38,90 28,39,237 28,40,50 28,41,37 28,42,8 28,46,6 28,47,5 28,50,17 28,51,22 28,55,9 28,58,3 28,70,4 29,10,3 29,11,3 29,13,5 29,16,4 29,19,49 29,20,42 29,21,36 29,22,24 29,23,37 29,24,97 29,25,167 29,26,149 29,27,88 29,28,19 29,29,20 29,30,100 29,31,16 29,32,45 29,33,33 29,34,43 29,35,49 29,36,25 29,37,15 29,38,57 29,39,61 29,40,72 29,41,44 29,42,5 29,49,11 29,51,13 29,53,3 30,12,9 30,13,7 30,14,5 30,16,37 30,18,6 30,19,12 30,20,22 30,21,30 30,22,18 30,23,60 30,24,83 30,25,68 30,26,137 30,27,18 30,28,16 30,29,29 30,30,20 30,31,91 30,32,120 30,33,123 30,34,94 30,35,41 30,36,8 30,37,19 30,38,77 30,39,21 30,40,42 30,52,7 30,53,42 30,55,4 30,58,9 30,59,4 30,60,4 30,64,8 31,11,7 31,12,14 31,13,9 31,14,3 31,19,52 31,20,3 31,21,19 31,22,131 31,23,44 31,26,12 31,28,55 31,29,93 31,30,85 31,31,56 31,32,74 31,33,28 31,34,25 31,35,61 31,36,29 31,37,66 31,38,16 31,40,3 31,54,11 31,55,11 31,56,18 31,57,23 31,58,14 31,62,5 31,63,6 31,64,5 32,13,4 32,14,3 32,17,3 32,18,12 32,19,19 32,20,5 32,21,37 32,22,18 32,23,17 32,25,3 32,26,15 32,27,9 32,29,12 32,30,204 32,31,145 32,32,4 32,33,6 32,35,23 32,36,3 32,37,9 32,50,6 32,56,10 32,57,50 32,58,46 32,59,50 32,60,7 33,8,7 33,12,15 33,13,15 33,17,4 33,18,12 33,19,36 33,20,18 33,21,6 33,22,25 33,23,69 33,24,36 33,25,15 33,26,24 33,27,55 33,28,65 33,29,136 33,30,182 33,31,100 33,37,5 33,38,5 33,50,10 33,57,13 33,58,17 33,59,42 33,60,27 34,7,20 34,10,5 34,11,13 34,12,5 34,13,15 34,16,3 34,18,21 34,19,15 34,20,26 34,21,4 34,23,25 34,24,127 34,25,57 34,26,64 34,27,16 34,28,52 34,29,81 34,35,6 34,36,3 34,57,10 34,59,7 34,60,19 35,7,13 35,11,20 35,13,3 35,18,6 35,19,16 35,20,10 35,21,3 35,22,20 35,23,28 35,24,40 35,26,4 35,28,3 35,29,55 35,31,3 35,35,3 35,36,3 36,8,5 36,9,9 36,10,4 36,11,11 36,12,3 36,15,3 36,16,4 36,19,55 36,20,25 36,21,7 36,22,3 36,23,19 36,24,10 36,25,5 36,26,22 37,7,4 37,8,6 37,9,5 37,11,14 37,15,12 37,16,20 37,17,32 37,18,25 37,19,35 37,20,37 37,22,28 38,5,17 38,7,24 38,8,4 38,10,7 38,15,18 38,16,20 38,17,27 38,18,13 38,19,9 38,20,9 38,21,9 38,22,3 38,25,3 38,26,6 38,59,10 38,60,7 39,5,5 39,8,42 39,10,10 39,11,19 39,12,6 39,13,8 39,14,14 39,15,34 39,16,21 39,17,46 39,18,55 39,19,20 39,20,8 39,21,3 39,22,5 39,27,3 39,56,3 39,57,4 39,58,76 39,59,7 39,60,29 40,7,22 40,8,35 40,11,7 40,12,11 40,14,15 40,15,3 40,16,18 40,17,13 40,18,11 40,19,12 40,20,3 40,21,16 40,22,102 40,23,6 40,56,10 40,57,6 40,58,93 41,3,9 41,4,15 41,5,30 41,7,26 41,14,14 41,15,9 41,16,18 41,17,8 41,22,4 41,23,36 41,24,3 41,56,10 41,57,49 41,58,9 42,3,3 42,4,3 42,5,7 42,7,3 42,8,8 42,13,3 42,14,16 42,15,17 42,19,15 42,34,4 42,57,44 42,58,24 43,1,4 43,2,4 43,6,10 43,7,3 43,13,14 43,14,3 43,15,22 43,16,7 43,18,11 43,19,41 43,21,12 43,22,33 43,23,12 43,24,36 43,34,9 43,35,4 43,57,31 43,58,25 44,1,6 44,2,4 44,3,4 44,5,4 44,10,26 44,11,5 44,12,5 44,13,22 44,15,11 44,18,19 44,19,16 44,20,53 44,21,49 44,22,188 44,23,85 44,28,3 44,57,34 44,58,10 45,4,8 45,8,4 45,10,30 45,11,9 45,13,13 45,14,14 45,17,3 45,18,19 45,19,14 45,21,17 45,22,280 45,23,65 45,26,3 45,57,11 46,7,9 46,8,4 46,9,19 46,10,10 46,11,12 46,12,3 46,13,5 46,14,8 46,15,4 46,17,24 46,18,27 46,21,4 46,22,191 46,23,85 46,26,6 47,7,3 47,8,12 47,9,5 47,12,3 47,13,3 47,16,9 47,17,9 47,22,207 47,23,91 47,25,25 47,26,7 47,28,178 47,29,112 47,30,58 48,6,5 48,7,13 48,8,13 48,9,3 48,12,7 48,16,11 48,17,6 48,22,68 48,23,170 48,24,37 48,25,23 48,26,25 48,27,104 48,28,235 49,7,8 49,8,21 49,15,8 49,16,14 49,17,3 49,18,6 49,23,205 49,24,354 49,25,136 49,26,154 49,27,68 50,23,14 50,24,25 50,25,5
+</script>
+<script>
+(function(){
+"use strict";
+const Y0=2003,VI=108;let NY=23,N=276,HY=2024;
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+function el(tag,a,p){const n=document.createElementNS(NS,tag);for(const k in a)n.setAttribute(k,a[k]);if(p)p.appendChild(n);return n}
+
+// ---------- texts ----------
+const TX={
+en:{brandSub:"MODIS + VIIRS · 2003–{Y1}",brand:"Fire Calendar of Peru",navStory:"The story",navMethod:"Method",navExplore:"Explore the data",kicker:"NASA Space Apps 2026 · Peru",
+heroTitle:'Every year, Peru has a <span class="fire">fire season</span>. Now we can see {NYR} years of it.',
+heroLead:"Satellites spot fires from space, but the old and the new satellites count them differently. We joined them into one fair record, region by region, so anyone can see when and where Peru burns.",
+ctaExplore:"Explore your region →",ctaHow:"How we did it",clockTitle:"Peru's fire clock",clockHint:"Each slice is a month. The longer the slice, the more fires in a typical year. Hover or tap a month.",
+k1:"1 · How satellites see fire",s1Title:"Two eyes in the sky, with different eyesight",s1Lead:"A “hotspot” is a spot on the ground that the satellite sees as much hotter than its surroundings, usually a fire. MODIS has watched since 2000. VIIRS joined in 2012 with a sharper view.",
+f1t:"MODIS sees in large squares",f1p:"A small farm burn can get lost inside a 1 km square.",f2t:"VIIRS sees in small squares",f2p:"The same small fire fills more of its square, so it gets detected.",f3t:"So VIIRS counts more fires",f3p:"Over Peru, VIIRS finds almost five times as many hotspots as MODIS. Comparing them directly would be unfair.",
+pixCap:"Same field, same small fire. In the 1 km view the heat is diluted; in the 375 m view one square lights up.",
+k2:"2 · One country, three worlds",s2Title:"Coast, Andes and Amazon burn at different times",s2Lead:"Peru's climates are so different that one conversion for the whole country is not enough. Each region gets its own adjustment, with its own fire season.",
+k3:"3 · Making one record",s3Title:"Slide to harmonize",s3Lead:"If we simply add up all satellites, fire seems to explode in 2012 and again in 2018. Those jumps are new satellites arriving, not more fire. Move the slider to convert everything to one VIIRS scale.",
+rawLab:"Satellites added up",harmLab:"Harmonized",sciTitle:"For scientists: the model",
+sci1:"Fit per region on monthly counts, 2012–2022 (both sensors active). Regions with fewer than 24 fire months use the national fit.",
+sci2:"high_season = months whose average count is above the region's own monthly average.",
+sci3:"Back-transform with Duan smearing; p10–p90 of residuals gives the range shown for pre-2012 estimates.",
+sci4:"From 2012: one VIIRS satellite per day (NOAA-20 from April 2018, S-NPP before). Vegetation fires, nominal and high confidence.",
+k4:"4 · Does it work?",s4Title:"Tested on years the model never saw",s4Lead:"We trained on 2012–2019 and checked 2020–2022 against real VIIRS counts.",
+m1v:"0.98",m1:"R² for Peru's monthly total",m2:"typical monthly error for all of Peru",m3:"of real months fall inside our range",m4:"regions with a 2003–{Y1} record",
+chTitle:"The challenge",chText:"Proposed by CONAE (Argentina) for NASA Space Apps Challenge 2026: build one continuous hotspot record from both sensors.",
+tmTitle:"The team",tmName:"Team name",tmText:"Lima, Peru. Replace this text with team members and roles.",tmNext:"Next steps: provinces and districts, land cover (crop vs. forest), and finer seasonality.",
+exKicker:"Explore the data · FIRMS 2003–{Y1}",lblArea:"Region",lblYear:"Year",lblMonth:"Month",t2l:"Compared with a typical year",t3l:"Peak month",t4l:"Where the number comes from",
+mapTitle:"Map",mmDep:"Regions",mmHeat:"Heat {HY}",calTitle:"Burning calendar",cmN:"How many",cmA:"Unusual?",
+calHow:"Each row is a year, each square a month. Darker red means more fires. Tap a square to see that month on the map.",
+calNote:"* Years before 2012 are estimated from MODIS (dotted border).",sciPanel:"For scientists: fit for this region and monthly data",csvBtn:"Copy monthly CSV",
+csvNote:'Server version: <span class="mono">GET /export.csv</span>',
+foot:"Data: NASA FIRMS (MODIS C6.1 and VIIRS 375 m, standard product, nominal and high confidence, vegetation fires). Boundaries: geoBoundaries.",
+months:["January","February","March","April","May","June","July","August","September","October","November","December"],
+mshort:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+allPeru:"All of Peru",lima:"Metropolitan Lima",wholeYear:"Whole year",est:"estimated",
+costa:"Coast",sierra:"Andes",selva:"Amazon",costaSub:"Desert coast, from Tumbes to Tacna",sierraSub:"Highlands, from Cajamarca to Puno",selvaSub:"Rainforest: Loreto, Ucayali, San Martín, Madre de Dios",
+shareOf:"of Peru's fires",
+costaDesc:"Few fires, spread through the year: crop residue burning in the valleys.",
+sierraDesc:"Fires peak in the dry season, July to October, when grasslands and fields are burned before the rains.",
+selvaDesc:"Fires concentrate in August and September, when cleared forest and farmland are burned.",
+clockRead:(m,v,s)=>`In a typical <b>${m}</b>, satellites detect about <b>${v}</b> hotspots in Peru${s}.`,
+peakNote:" — the peak of the season",
+morphMsg:(p,j)=>p<15?`Satellites simply added up: from 2011 to 2012 the count jumps <b>×${j}</b>. That is a new satellite, not more fire.`:p>85?`Harmonized: the 2011 to 2012 step is only <b>×${j}</b>. Years before 2012 (hollow dots) are estimates with their range.`:`Converting… ${p}%`,
+yearsAxis:"k",
+plain:(o)=>`In ${o.when}, <b>${o.zone}</b> had about <b>${o.v}</b> fire hotspots${o.est?" (estimated from MODIS)":""}. That is <b>${o.pct}</b> of a typical ${o.month?"month":"year"}: ${o.st}.${o.month?"":` Fire peaked in ${o.peak}.`}`,
+stWord:{alto:"higher than usual",bajo:"lower than usual",normal:"within the usual range"},stShort:{alto:"high",bajo:"low",normal:"normal"},
+hsIn:w=>`Hotspots in ${w}`,range:"range",viirsEq:"VIIRS equivalent",median:"typical",hsWord:"hotspots",
+src1:"Adjusted MODIS",src2:"VIIRS",fitReg:"regional fit",fitNat:"national fit",fitAll:"one fit per region",snpp:"Suomi-NPP",n20:"NOAA-20 (S-NPP as backup)",
+mapHowDep:(w)=>`Color shows fires per 1,000 km² in ${w}. Tap a region to select it; tap again to go back to all of Peru.`,
+mapHowHeat:"Every square is 0.25° (about 28 km). Brighter means more VIIRS hotspots in {HY}.",
+per1000:"hotspots per 1,000 km²",heatScale:"VIIRS hotspots in {HY} per square",calScaleN:"Hotspots per month",
+calScaleA:'<span class="pill bajo">low</span> below the usual range <span class="pill normal">normal</span> <span class="pill alto">high</span> above the usual range (2003–2022)',
+tipCal:(o)=>`<b>${o.m} ${o.y}</b>${o.est?" · estimated":""}<br>${o.v} hotspots${o.r}<br>Typical ${o.m}: ${o.med}<br>${o.st}`,
+annual:"Year total",
+sciHead:["Region","Fit","a","d","b","High season","Months"],own:"own",nat:"national",
+csvCopied:"CSV copied",csvSelect:"Select and copy the text",
+loc:"en-US"},
+es:{brandSub:"MODIS + VIIRS · 2003–{Y1}",brand:"Calendario del Fuego del Perú",navStory:"La historia",navMethod:"Método",navExplore:"Explora los datos",kicker:"NASA Space Apps 2026 · Perú",
+heroTitle:'Cada año el Perú tiene una <span class="fire">temporada de fuego</span>. Ahora podemos ver {NYR} años de ella.',
+heroLead:"Los satélites detectan fuegos desde el espacio, pero los satélites antiguos y los nuevos los cuentan distinto. Los unimos en un solo registro justo, región por región, para que cualquiera vea cuándo y dónde se quema el Perú.",
+ctaExplore:"Explora tu región →",ctaHow:"Cómo lo hicimos",clockTitle:"El reloj del fuego del Perú",clockHint:"Cada tajada es un mes. Mientras más larga, más fuegos en un año típico. Pasa el cursor o toca un mes.",
+k1:"1 · Cómo ven el fuego los satélites",s1Title:"Dos ojos en el cielo, con distinta vista",s1Lead:"Un “foco de calor” es un punto del suelo que el satélite ve mucho más caliente que su entorno, casi siempre un fuego. MODIS observa desde 2000. VIIRS llegó en 2012 con una vista más fina.",
+f1t:"MODIS ve en cuadros grandes",f1p:"Una quema pequeña en una chacra se puede perder dentro de un cuadro de 1 km.",f2t:"VIIRS ve en cuadros pequeños",f2p:"El mismo fuego pequeño ocupa más de su cuadro, así que sí se detecta.",f3t:"Por eso VIIRS cuenta más fuegos",f3p:"En el Perú, VIIRS encuentra casi cinco veces más focos que MODIS. Compararlos tal cual sería injusto.",
+pixCap:"Mismo campo, mismo fuego pequeño. En la vista de 1 km el calor se diluye; en la de 375 m se enciende un cuadro.",
+k2:"2 · Un país, tres mundos",s2Title:"Costa, sierra y selva se queman en meses distintos",s2Lead:"Los climas del Perú son tan distintos que una sola conversión para todo el país no alcanza. Cada departamento tiene su propio ajuste, con su propia temporada de fuego.",
+k3:"3 · Un solo registro",s3Title:"Desliza para armonizar",s3Lead:"Si solo sumamos todos los satélites, el fuego parece explotar en 2012 y otra vez en 2018. Esos saltos son satélites nuevos, no más fuego. Mueve el control para llevar todo a una sola escala VIIRS.",
+rawLab:"Satélites sumados",harmLab:"Armonizada",sciTitle:"Para científicos: el modelo",
+sci1:"Ajuste por departamento con conteos mensuales 2012–2022 (ambos sensores activos). Los departamentos con menos de 24 meses con fuego usan el ajuste nacional.",
+sci2:"temporada_alta = meses cuyo promedio supera el promedio mensual del propio departamento.",
+sci3:"Retransformación con smearing de Duan; los percentiles p10–p90 de los residuos dan el rango de las estimaciones antes de 2012.",
+sci4:"Desde 2012: un satélite VIIRS por día (NOAA-20 desde abril de 2018, S-NPP antes). Fuegos de vegetación, confianza nominal y alta.",
+k4:"4 · ¿Funciona?",s4Title:"Probado con años que el modelo nunca vio",s4Lead:"Entrenamos con 2012–2019 y comparamos 2020–2022 con los conteos reales de VIIRS.",
+m1v:"0,98",m1:"R² del total mensual del Perú",m2:"error mensual típico para todo el Perú",m3:"de los meses reales caen dentro de nuestro rango",m4:"departamentos con registro 2003–{Y1}",
+chTitle:"El reto",chText:"Propuesto por CONAE (Argentina) para NASA Space Apps Challenge 2026: construir un registro continuo de focos de calor con ambos sensores.",
+tmTitle:"El equipo",tmName:"Nombre del equipo",tmText:"Lima, Perú. Reemplaza este texto con los integrantes y sus roles.",tmNext:"Siguientes pasos: provincias y distritos, cobertura del suelo (cultivo o bosque) y estacionalidad más fina.",
+exKicker:"Explora los datos · FIRMS 2003–{Y1}",lblArea:"Departamento",lblYear:"Año",lblMonth:"Mes",t2l:"Frente a un año típico",t3l:"Mes con más fuego",t4l:"De dónde sale el número",
+mapTitle:"Mapa",mmDep:"Departamentos",mmHeat:"Calor {HY}",calTitle:"Calendario de quemas",cmN:"Cuántos",cmA:"¿Fuera de lo normal?",
+calHow:"Cada fila es un año y cada cuadro un mes. Más rojo, más fuegos. Toca un cuadro para ver ese mes en el mapa.",
+calNote:"* Los años antes de 2012 son estimados desde MODIS (borde punteado).",sciPanel:"Para científicos: ajuste de este departamento y datos mensuales",csvBtn:"Copiar CSV mensual",
+csvNote:'Versión con servidor: <span class="mono">GET /export.csv</span>',
+foot:"Datos: NASA FIRMS (MODIS C6.1 y VIIRS 375 m, producto científico, confianza nominal y alta, fuegos de vegetación). Límites: geoBoundaries.",
+months:["enero","febrero","marzo","abril","mayo","junio","julio","agosto","setiembre","octubre","noviembre","diciembre"],
+mshort:["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Set","Oct","Nov","Dic"],
+allPeru:"Todo el Perú",lima:"Lima Metropolitana",wholeYear:"Todo el año",est:"estimado",
+costa:"Costa",sierra:"Sierra",selva:"Selva",costaSub:"Costa desértica, de Tumbes a Tacna",sierraSub:"Andes, de Cajamarca a Puno",selvaSub:"Amazonía: Loreto, Ucayali, San Martín, Madre de Dios",
+shareOf:"de los fuegos del Perú",
+costaDesc:"Pocos fuegos y repartidos en el año: quema de rastrojos en los valles.",
+sierraDesc:"El fuego sube en la época seca, de julio a octubre, cuando se queman pastos y chacras antes de las lluvias.",
+selvaDesc:"El fuego se concentra en agosto y setiembre, cuando se queman bosques talados y chacras.",
+clockRead:(m,v,s)=>`En un <b>${m}</b> típico, los satélites detectan unos <b>${v}</b> focos en el Perú${s}.`,
+peakNote:": el pico de la temporada",
+morphMsg:(p,j)=>p<15?`Satélites solo sumados: de 2011 a 2012 el conteo salta <b>×${j}</b>. Es un satélite nuevo, no más fuego.`:p>85?`Armonizada: el paso de 2011 a 2012 es solo <b>×${j}</b>. Los años antes de 2012 (puntos huecos) son estimados con su rango.`:`Convirtiendo… ${p}%`,
+yearsAxis:" mil",
+plain:(o)=>`En ${o.when}, <b>${o.zone}</b> tuvo cerca de <b>${o.v}</b> focos de calor${o.est?" (estimado desde MODIS)":""}. Es el <b>${o.pct}</b> de un ${o.month?"mes":"año"} típico: ${o.st}.${o.month?"":` El pico fue en ${o.peak}.`}`,
+stWord:{alto:"más de lo habitual",bajo:"menos de lo habitual",normal:"dentro de lo habitual"},stShort:{alto:"alto",bajo:"bajo",normal:"normal"},
+hsIn:w=>`Focos en ${w}`,range:"rango",viirsEq:"equivalente VIIRS",median:"típico",hsWord:"focos",
+src1:"MODIS ajustado",src2:"VIIRS",fitReg:"ajuste propio",fitNat:"ajuste nacional",fitAll:"un ajuste por departamento",snpp:"Suomi-NPP",n20:"NOAA-20 (S-NPP de respaldo)",
+mapHowDep:(w)=>`El color muestra fuegos por cada 1 000 km² en ${w}. Toca un departamento para elegirlo; tócalo otra vez para volver a todo el Perú.`,
+mapHowHeat:"Cada cuadro mide 0,25° (unos 28 km). Más intenso, más focos VIIRS en {HY}.",
+per1000:"focos por 1 000 km²",heatScale:"Focos VIIRS en {HY} por cuadro",calScaleN:"Focos por mes",
+calScaleA:'<span class="pill bajo">bajo</span> por debajo de lo habitual <span class="pill normal">normal</span> <span class="pill alto">alto</span> por encima de lo habitual (2003–2022)',
+tipCal:(o)=>`<b>${o.m} ${o.y}</b>${o.est?" · estimado":""}<br>${o.v} focos${o.r}<br>${o.m} típico: ${o.med}<br>${o.st}`,
+annual:"Total del año",
+sciHead:["Departamento","Ajuste","a","d","b","Temporada alta","Meses"],own:"propio",nat:"nacional",
+csvCopied:"CSV copiado",csvSelect:"Selecciona y copia el texto",
+loc:"es-PE"}
+};
+let LANG="en";
+try{const s=localStorage.getItem("lang");if(s==="es"||s==="en")LANG=s}catch(e){}
+const Y1=()=>Y0+NY-1;
+const sub=v=>typeof v==="string"?v.replace(/\{Y1\}/g,Y1()).replace(/\{NYR\}/g,NY).replace(/\{HY\}/g,HY):v;
+const T=k=>sub(TX[LANG][k]);
+const fmt=n=>Math.round(n).toLocaleString(T("loc"));
+const dec=(x,d)=>x.toLocaleString(T("loc"),{minimumFractionDigits:d,maximumFractionDigits:d});
+
+// ---------- data ----------
+const DEP=[];let HEAT=[];
+for(const line of $("data").textContent.trim().split("\n")){
+  if(line.startsWith("META;")){const m=line.split(";");NY=+m[1];N=NY*12;HY=+m[2];continue}
+  if(line.startsWith("HEAT;")){HEAT=line.slice(5).split(" ").map(s=>s.split(",").map(Number));continue}
+  const [id,name,m,v,vay,geo]=line.split(";");
+  DEP.push({id,raw:name,M:m.split(",").map(Number),V:v.split(",").map(Number),VAy:vay.split(",").map(Number),
+    rings:geo.split("|").map(r=>r.split(" ").map(p=>p.split(",").map(Number)))});
+}
+const ZONE_OF={costa:["PE-TUM","PE-PIU","PE-LAM","PE-LAL","PE-LIM","PE-CAL","PE-LMA","PE-ICA","PE-ARE","PE-MOQ","PE-TAC"],selva:["PE-LOR","PE-UCA","PE-SAM","PE-MDD"]};
+for(const d of DEP){d.zone=ZONE_OF.costa.includes(d.id)?"costa":ZONE_OF.selva.includes(d.id)?"selva":"sierra"}
+const dname=d=>d.id==="PE"?T("allPeru"):d.raw.startsWith("Municipalidad")?T("lima"):d.raw;
+for(const d of DEP){let A=0,sy=0,n=0;for(const r of d.rings){let s=0;for(let i=0;i<r.length;i++){const p=r[i],q=r[(i+1)%r.length];s+=p[0]*q[1]-q[0]*p[1];sy+=p[1];n++}A+=Math.abs(s)/2}
+  d.area=A*Math.pow(111.32/20,2)*Math.cos(sy/n/20*Math.PI/180)}
+
+// ---------- model ----------
+function solve3(A,b){const M=A.map((r,i)=>r.concat([b[i]]));for(let c=0;c<3;c++){let p=c;for(let r=c+1;r<3;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;[M[c],M[p]]=[M[p],M[c]];if(Math.abs(M[c][c])<1e-12)return null;for(let r=0;r<3;r++){if(r===c)continue;const f=M[r][c]/M[c][c];for(let k=c;k<4;k++)M[r][k]-=f*M[c][k]}}return [M[0][3]/M[0][0],M[1][3]/M[1][1],M[2][3]/M[2][2]]}
+function quant(a,q){const s=a.slice().sort((x,y)=>x-y);const i=(s.length-1)*q,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo)}
+function fit(rows){
+  const X=rows.map(r=>[1,r[2],Math.log1p(r[0])]),Y=rows.map(r=>Math.log1p(r[1]));let a,d,b;
+  if(new Set(rows.map(r=>r[2])).size<2){let sx=0,sy=0,sxx=0,sxy=0;const n=rows.length;for(let i=0;i<n;i++){sx+=X[i][2];sy+=Y[i];sxx+=X[i][2]*X[i][2];sxy+=X[i][2]*Y[i]}b=(n*sxy-sx*sy)/(n*sxx-sx*sx);a=(sy-b*sx)/n;d=0}
+  else{const A=[[0,0,0],[0,0,0],[0,0,0]],B=[0,0,0];for(let i=0;i<X.length;i++)for(let j=0;j<3;j++){B[j]+=X[i][j]*Y[i];for(let k=0;k<3;k++)A[j][k]+=X[i][j]*X[i][k]}[a,d,b]=solve3(A,B)}
+  const res=X.map((x,i)=>Y[i]-(a+d*x[1]+b*x[2]));
+  return {a,d,b,smear:res.reduce((s,r)=>s+Math.exp(r),0)/res.length,p10:quant(res,.1),p90:quant(res,.9),n:rows.length};
+}
+const pool=[];
+for(const d of DEP){
+  const mm=Array(12).fill(0);for(let y=2012;y<=2022;y++)for(let k=0;k<12;k++)mm[k]+=d.M[(y-Y0)*12+k]/11;
+  const avg=mm.reduce((s,x)=>s+x,0)/12;d.high=mm.map(x=>avg>0&&x>=avg?1:0);
+  d.rows=[];for(let t=VI+1;t<=(2022-Y0)*12+11;t++){const m=d.M[t],v=d.V[t-VI];if(m>0||v>0)d.rows.push([m,v,d.high[t%12]])}
+  pool.push(...d.rows);
+}
+const NAT=fit(pool);
+for(const d of DEP){
+  let p=null;if(d.rows.filter(r=>r[0]>0).length>=24){p=fit(d.rows);if(!(p.b>=0.5&&p.b<=1.3))p=null}
+  d.p=p||NAT;d.own=!!p;d.nMonths=d.rows.length;
+  d.H=new Float64Array(N);d.LO=new Float64Array(N);d.HI=new Float64Array(N);
+  for(let t=0;t<N;t++){
+    if(t<VI){const m=d.M[t];if(m>0){const lin=d.p.a+d.p.d*d.high[t%12]+d.p.b*Math.log1p(m);
+      d.H[t]=Math.max(d.p.smear*Math.exp(lin)-1,0);d.LO[t]=Math.max(Math.exp(lin+d.p.p10)-1,0);d.HI[t]=Math.max(Math.exp(lin+d.p.p90)-1,0)}}
+    else d.H[t]=d.LO[t]=d.HI[t]=d.V[t-VI];
+  }
+  d.rawY=Array.from({length:NY},(_,i)=>{let s=0;for(let k=0;k<12;k++)s+=d.M[i*12+k];if(Y0+i>=2012)s+=d.VAy[Y0+i-2012];return s});
+}
+function sumZone(id,list){const z={id,H:new Float64Array(N),LO:new Float64Array(N),HI:new Float64Array(N),rawY:Array(NY).fill(0)};
+  for(const d of list){for(let t=0;t<N;t++){z.H[t]+=d.H[t];z.LO[t]+=d.LO[t];z.HI[t]+=d.HI[t]}for(let i=0;i<NY;i++)z.rawY[i]+=d.rawY[i]}return z}
+const PE=sumZone("PE",DEP);
+const GROUP={costa:sumZone("costa",DEP.filter(d=>d.zone==="costa")),sierra:sumZone("sierra",DEP.filter(d=>d.zone==="sierra")),selva:sumZone("selva",DEP.filter(d=>d.zone==="selva"))};
+const ZONES={PE};for(const d of DEP)ZONES[d.id]=d;
+const annual=a=>Array.from({length:NY},(_,i)=>{let s=0;for(let k=0;k<12;k++)s+=a[i*12+k];return s});
+const clim=z=>{const o=[];for(let k=0;k<12;k++){const v=[];const nb=Math.min(20,NY);for(let y=0;y<nb;y++)v.push(z.H[y*12+k]);o.push({med:quant(v,.5),p25:quant(v,.25),p75:quant(v,.75),mean:v.reduce((s,x)=>s+x,0)/nb})}return o};
+const status=(v,c)=>v>c.p75&&v>0?"alto":v<c.p25?"bajo":"normal";
+let RATIO=0;(function(){let v=0,m=0;for(const d of DEP)for(let t=VI;t<=(2022-Y0)*12+11;t++){v+=d.V[t-VI];m+=d.M[t]}RATIO=v/m})();
+
+// ---------- tooltip ----------
+const tip=$("tip");
+function showTip(e,h){tip.innerHTML=h;tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(8,x)+"px";tip.style.top=Math.max(8,y)+"px"}
+function hideTip(){tip.hidden=true}
+
+// ---------- fire clock ----------
+function drawClock(host,z,opt){
+  host.innerHTML="";const c=clim(z).map(x=>x.mean);const mx=Math.max(...c)||1;
+  const S=opt.size,cx=S/2,cy=S/2,r0=S*0.17,r1=S/2-(opt.labels?26:6);
+  const svg=el("svg",{viewBox:`0 0 ${S} ${S}`,role:"img","aria-label":opt.aria||""},host);
+  for(const f of [0.5,1]){el("circle",{cx,cy,r:r0+(r1-r0)*f,fill:"none",stroke:"var(--line)","stroke-dasharray":f<1?"3 4":""},svg)}
+  const color=opt.color||"var(--crimson)";const ws=[];
+  c.forEach((v,k)=>{const a0=(k/12)*2*Math.PI-Math.PI/2+0.02,a1=((k+1)/12)*2*Math.PI-Math.PI/2-0.02;const r=r0+(r1-r0)*Math.sqrt(v/mx);
+    const p=`M${cx+r0*Math.cos(a0)},${cy+r0*Math.sin(a0)}L${cx+r*Math.cos(a0)},${cy+r*Math.sin(a0)}A${r},${r} 0 0 1 ${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)}L${cx+r0*Math.cos(a1)},${cy+r0*Math.sin(a1)}A${r0},${r0} 0 0 0 ${cx+r0*Math.cos(a0)},${cy+r0*Math.sin(a0)}Z`;
+    const w=el("path",{d:p,class:"wedge",fill:color,opacity:(0.35+0.65*Math.sqrt(v/mx)).toFixed(2),tabindex:opt.interactive?0:-1},svg);ws.push(w);
+    if(opt.labels){const am=(k+.5)/12*2*Math.PI-Math.PI/2;const t=el("text",{x:cx+(r1+14)*Math.cos(am),y:cy+(r1+14)*Math.sin(am)+4,"text-anchor":"middle","font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);t.textContent=T("mshort")[k]}
+    if(opt.onPick){const pick=()=>{ws.forEach(x=>x.classList.remove("on"));w.classList.add("on");opt.onPick(k,v,mx)};w.addEventListener("mouseenter",pick);w.addEventListener("focus",pick);w.addEventListener("click",pick)}
+  });
+  const tot=c.reduce((s,x)=>s+x,0);
+  if(opt.center){const t1=el("text",{x:cx,y:cy-2,"text-anchor":"middle","font-family":"Bricolage Grotesque, sans-serif","font-weight":800,"font-size":S*0.065,fill:"var(--ink)"},svg);t1.textContent=fmt(tot);
+    const t2=el("text",{x:cx,y:cy+S*0.05,"text-anchor":"middle","font-size":S*0.032,fill:"var(--muted)"},svg);t2.textContent=LANG==="es"?"focos al año":"hotspots / year"}
+  return {ws,c,mx};
+}
+function heroClock(){
+  const pk=c=>c.indexOf(Math.max(...c));
+  const r=drawClock($("clock-pe"),PE,{size:420,labels:true,center:true,interactive:true,aria:T("clockTitle"),onPick:(k,v,mx)=>{
+    $("clock-read").innerHTML=T("clockRead")(T("months")[k],fmt(v),v===mx?T("peakNote"):"")}});
+  const k=pk(r.c);r.ws[k].classList.add("on");$("clock-read").innerHTML=T("clockRead")(T("months")[k],fmt(r.c[k]),T("peakNote"));
+}
+
+// ---------- pixel illustration ----------
+function drawPixels(){
+  const s=$("pix");s.innerHTML="";const fire=[150,160];
+  const lab=(x,y,t,a)=>{const e=el("text",{x,y,"text-anchor":a||"middle","font-size":15,"font-weight":700,fill:"var(--ink)"},s);e.textContent=t};
+  // left: one big pixel
+  el("rect",{x:20,y:40,width:220,height:220,fill:"var(--soft)",stroke:"var(--muted)","stroke-width":2,rx:4},s);
+  el("rect",{x:20,y:40,width:220,height:220,fill:"var(--maize)",opacity:.22,rx:4},s);
+  el("circle",{cx:110,cy:170,r:9,fill:"var(--crimson)"},s);
+  lab(130,28,"MODIS · 1 km");
+  const t1=el("text",{x:130,y:290,"text-anchor":"middle","font-size":13,fill:"var(--muted)"},s);t1.textContent=LANG==="es"?"calor diluido: puede no detectarse":"heat diluted: may be missed";
+  // right: 3x3 grid (≈375 m)
+  const x0=280,y0=40,c=220/3;
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++){const on=(i===1&&j===2);el("rect",{x:x0+i*c,y:y0+j*c,width:c,height:c,fill:on?"var(--crimson)":"var(--soft)",opacity:on?0.85:1,stroke:"var(--muted)","stroke-width":1.5},s)}
+  el("circle",{cx:x0+90,cy:y0+130,r:9,fill:"var(--maize)"},s);
+  lab(390,28,"VIIRS · 375 m");
+  const t2=el("text",{x:390,y:290,"text-anchor":"middle","font-size":13,fill:"var(--muted)"},s);t2.textContent=LANG==="es"?"un cuadro se enciende: detectado":"one square lights up: detected";
+}
+
+// ---------- three regions ----------
+function drawRegions(){
+  const host=$("regions");host.innerHTML="";const tot=annual(PE.H).slice(0,Math.min(20,NY)).reduce((a,b)=>a+b,0);
+  for(const g of ["costa","sierra","selva"]){
+    if(!DEP.some(d=>d.zone===g))continue;
+    const z=GROUP[g],share=annual(z.H).slice(0,Math.min(20,NY)).reduce((a,b)=>a+b,0)/tot;
+    const col=`var(--${g})`;const card=document.createElement("article");card.className="region";card.style.setProperty("--c",col);
+    card.innerHTML=`<h3>${T(g)}</h3><div class="sub">${T(g+"Sub")}</div><div class="share num">${Math.round(share*100)}%</div><div class="sub">${T("shareOf")}</div><div class="clk"></div><p class="desc">${T(g+"Desc")}</p>`;
+    host.appendChild(card);
+    drawClock(card.querySelector(".clk"),z,{size:240,labels:true,color:col,aria:T(g)});
+  }
+}
+
+// ---------- slider morph ----------
+function niceStep(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+function drawMorph(){
+  const s=$("morph");s.innerHTML="";const W=1000,Hh=320,L=70,R=20,Tp=18,B=30;
+  const raw=PE.rawY,h=annual(PE.H),lo=annual(PE.LO),hi=annual(PE.HI);
+  const top=Math.max(...raw,...hi),st=niceStep(top/4),nT=Math.ceil(top/st),ymax=st*nT;
+  const x=i=>L+(W-L-R)*i/(NY-1),y=v=>Tp+(Hh-Tp-B)*(1-v/ymax);
+  const ax=el("g",{class:"axis"},s);
+  for(let k=0;k<=nT;k++){const v=st*k;el("line",{x1:L,x2:W-R,y1:y(v),y2:y(v)},ax);const t=el("text",{x:L-8,y:y(v)+4,"text-anchor":"end"},ax);t.textContent=v>=1000?Math.round(v/1000)+T("yearsAxis"):fmt(v)}
+  for(let i=0;i<NY;i+=2){const t=el("text",{x:x(i),y:Hh-8,"text-anchor":"middle"},ax);t.textContent=Y0+i}
+  for(const [yr,lb] of [[2012.05,"S-NPP"],[2018.25,"NOAA-20"]]){const xx=x(yr-Y0);el("line",{x1:xx,x2:xx,y1:Tp,y2:Hh-B,stroke:"var(--muted)","stroke-dasharray":"3 4"},s);const t=el("text",{x:xx+5,y:Tp+12,"font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},s);t.textContent="+ "+lb}
+  let band="";for(let i=0;i<NY;i++)band+=(i?"L":"M")+x(i)+","+y(hi[i]);for(let i=NY-1;i>=0;i--)band+="L"+x(i)+","+y(lo[i]);
+  const bandP=el("path",{d:band+"Z",fill:"var(--crimson)",opacity:0},s);
+  const ghost=el("path",{fill:"none",stroke:"var(--muted)","stroke-width":1.5,"stroke-dasharray":"5 5",opacity:0},s);
+  const line=el("path",{fill:"none","stroke-width":3.5,"stroke-linejoin":"round"},s);
+  const dots=[];for(let i=0;i<NY;i++)dots.push(el("circle",{r:4.5,"stroke-width":2},s));
+  ghost.setAttribute("d",raw.map((v,i)=>(i?"L":"M")+x(i)+","+y(v)).join(""));
+  function upd(){const p=+$("harm").value/100;
+    const vals=raw.map((r,i)=>r*(1-p)+h[i]*p);
+    line.setAttribute("d",vals.map((v,i)=>(i?"L":"M")+x(i)+","+y(v)).join(""));
+    const col=`color-mix(in oklab, var(--crimson) ${Math.round(p*100)}%, var(--muted))`;line.setAttribute("stroke",col);
+    dots.forEach((d,i)=>{d.setAttribute("cx",x(i));d.setAttribute("cy",y(vals[i]));const est=Y0+i<2012&&p>0.5;d.setAttribute("fill",est?"var(--surface)":col);d.setAttribute("stroke",col)});
+    bandP.setAttribute("opacity",(p*0.16).toFixed(3));ghost.setAttribute("opacity",(p*0.6).toFixed(2));
+    const i11=2011-Y0,j=vals[i11+1]/vals[i11];
+    $("morph-msg").innerHTML=T("morphMsg")(Math.round(p*100),dec(j,1));
+  }
+  $("harm").oninput=upd;upd();
+  const hit=el("rect",{x:L,y:Tp,width:W-L-R,height:Hh-Tp-B,fill:"transparent"},s);
+  hit.addEventListener("mousemove",e=>{const r=s.getBoundingClientRect();const px=(e.clientX-r.left)*W/r.width;const i=Math.max(0,Math.min(NY-1,Math.round((px-L)/(W-L-R)*(NY-1))));
+    showTip(e,`<b>${Y0+i}</b><br>${T("rawLab")}: ${fmt(raw[i])}<br>${T("harmLab")}: ${fmt(h[i])}${Y0+i<2012?`<br>${T("range")}: ${fmt(lo[i])}–${fmt(hi[i])}`:""}`)});
+  hit.addEventListener("mouseleave",hideTip);
+}
+
+// ---------- explorer ----------
+const S={zone:"PE",year:0,month:-1,mapMode:"dep",calMode:"n"};
+const VB="-1632 -2 264 372";
+const ringPath=r=>r.map((p,i)=>(i?"L":"M")+p[0]+","+(-p[1])).join("")+"Z";
+function periodValue(z){if(S.month>=0)return z.H[(S.year-Y0)*12+S.month];let s=0;for(let k=0;k<12;k++)s+=z.H[(S.year-Y0)*12+k];return s}
+const when=()=>S.month>=0?`${T("months")[S.month]} ${S.year}`:`${S.year}`;
+function fireFill(f){return f<=0?"var(--cell0)":f<0.5?`color-mix(in oklab, var(--maize) ${Math.round(15+f*170)}%, var(--cell0))`:`color-mix(in oklab, var(--crimson) ${Math.round((f-0.5)*200)}%, var(--maize))`}
+function drawMap(){
+  const host=$("map");host.innerHTML="";const svg=el("svg",{viewBox:VB,role:"img","aria-label":T("mapTitle")},host);const g=el("g",{},svg);
+  if(S.mapMode==="dep"){
+    const dens=DEP.map(d=>periodValue(d)/d.area*1000);const mx=Math.max(...dens.filter((_,i)=>DEP[i].area>300))||1;
+    DEP.forEach((d,i)=>{const p=el("path",{d:d.rings.map(ringPath).join(""),class:"dep"+(S.zone===d.id?" sel":""),tabindex:0,"aria-label":dname(d)},g);
+      p.style.fill=fireFill(Math.min(1,Math.sqrt(dens[i]/mx)));
+      p.addEventListener("mousemove",e=>showTip(e,`<b>${dname(d)}</b><br>${fmt(periodValue(d))} ${T("hsWord")}${S.year<2012?" ("+T("est")+")":""}<br>${dec(dens[i],1)} ${T("per1000")}`));
+      p.addEventListener("mouseleave",hideTip);
+      const go=()=>setZone(S.zone===d.id?"PE":d.id);p.addEventListener("click",go);p.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+    $("map-scale").innerHTML=`<span>${T("per1000")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.1)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">0 – ${fmt(mx)}</span>`;
+    $("map-howto").textContent=T("mapHowDep")(when());
+  }else{
+    DEP.forEach(d=>el("path",{d:d.rings.map(ringPath).join(""),fill:"var(--cell0)",stroke:"var(--surface)","stroke-width":1,"vector-effect":"non-scaling-stroke"},g));
+    const mx=Math.max(...HEAT.map(h=>h[2]));const hg=el("g",{},svg);
+    for(const [xi,yi,c] of HEAT){const f=Math.log1p(c)/Math.log1p(mx);
+      const r=el("rect",{x:-1630+xi*5,y:370-(yi+1)*5,width:5,height:5,fill:fireFill(Math.max(.12,f))},hg);
+      r.addEventListener("mousemove",e=>showTip(e,`<b>${fmt(c)} ${T("hsWord")}</b> · ${HY}<br>${dec(-81.5+xi/4+0.125,2)}°, ${dec(-18.5+yi/4+0.125,2)}°`));r.addEventListener("mouseleave",hideTip)}
+    if(S.zone!=="PE"){const d=ZONES[S.zone];el("path",{d:d.rings.map(ringPath).join(""),fill:"none",stroke:"var(--ink)","stroke-width":2.4,"vector-effect":"non-scaling-stroke"},svg)}
+    $("map-scale").innerHTML=`<span>${T("heatScale")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.12)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">3 – ${fmt(mx)}</span>`;
+    $("map-howto").textContent=T("mapHowHeat");
+  }
+}
+function drawCal(){
+  const z=ZONES[S.zone],cl=clim(z),host=$("cal");host.innerHTML="";
+  const cw=34,ch=17,gap=2,L=48,Tp=22,barW=110,W=L+12*(cw+gap)+16+barW,Hh=Tp+NY*(ch+gap)+6;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${Hh}`,role:"img","aria-label":T("calTitle")},host);const ax=el("g",{class:"axis"},svg);
+  T("mshort").forEach((m,k)=>{const t=el("text",{x:L+k*(cw+gap)+cw/2,y:14,"text-anchor":"middle"},ax);t.textContent=m});
+  const th=el("text",{x:L+12*(cw+gap)+16,y:14},ax);th.textContent=T("annual");
+  let mx=0;for(let t=0;t<N;t++)mx=Math.max(mx,z.H[t]);const yT=annual(z.H),yM=Math.max(...yT);
+  for(let i=0;i<NY;i++){const yr=Y0+i,est=yr<2012,yy=Tp+i*(ch+gap);
+    const lb=el("text",{x:L-8,y:yy+ch-4,"text-anchor":"end","font-weight":yr===S.year?"700":"400"},ax);lb.textContent=yr+(est?"*":"");if(yr===S.year)lb.setAttribute("fill","var(--ink)");
+    for(let k=0;k<12;k++){const t=i*12+k,v=z.H[t],c=cl[k],st=status(v,c);let fill;
+      if(S.calMode==="n")fill=fireFill(mx>0?Math.sqrt(v/mx):0);
+      else{const r=c.med>0?v/c.med:(v>0?3:1);fill=st==="alto"?`color-mix(in oklab, var(--crimson) ${Math.round(Math.min(100,35+Math.log2(r)*30))}%, var(--cell0))`:st==="bajo"?`color-mix(in oklab, var(--costa) ${Math.round(Math.min(100,30+(1-r)*60))}%, var(--cell0))`:"var(--cell0)"}
+      const selm=yr===S.year&&S.month===k;
+      const rc=el("rect",{x:L+k*(cw+gap),y:yy,width:cw,height:ch,rx:3,class:"cal-cell",fill,stroke:selm?"var(--ink)":est?"var(--muted)":"none","stroke-width":selm?2:est?0.8:0,"stroke-dasharray":est&&!selm?"2 2":""},svg);
+      rc.addEventListener("mousemove",e=>showTip(e,T("tipCal")({m:T("months")[k],y:yr,est,v:fmt(v),r:est?` (${T("range")} ${fmt(z.LO[t])}–${fmt(z.HI[t])})`:"",med:fmt(c.med),st:T("stShort")[st]})));
+      rc.addEventListener("mouseleave",hideTip);
+      rc.addEventListener("click",()=>{S.year=yr;S.month=k;syncControls();renderEx()});
+    }
+    el("rect",{x:L+12*(cw+gap)+16,y:yy+3,width:Math.max(1,yM>0?barW*yT[i]/yM:0),height:ch-6,rx:2,fill:est?"var(--muted)":"var(--crimson)",opacity:est?0.5:0.85},svg);
+  }
+  $("cal-scale").innerHTML=S.calMode==="n"?`<span>${T("calScaleN")}</span><span class="bar" style="background:linear-gradient(90deg,${fireFill(.1)},${fireFill(.5)},${fireFill(1)})"></span><span class="num">0 – ${fmt(mx)}</span>`:T("calScaleA");
+}
+function drawTiles(){
+  const z=ZONES[S.zone],cl=clim(z),yi=S.year-Y0,est=S.year<2012;let v=0,lo=0,hi=0,normal,st;
+  if(S.month>=0){const t=yi*12+S.month;v=z.H[t];lo=z.LO[t];hi=z.HI[t];normal=cl[S.month].med;st=status(v,cl[S.month])}
+  else{for(let k=0;k<12;k++){v+=z.H[yi*12+k];lo+=z.LO[yi*12+k];hi+=z.HI[yi*12+k]}const yt=annual(z.H).slice(0,Math.min(20,NY));normal=quant(yt,.5);st=v>quant(yt,.75)?"alto":v<quant(yt,.25)?"bajo":"normal"}
+  let pk=0,pv=-1;for(let k=0;k<12;k++){const x=z.H[yi*12+k];if(x>pv){pv=x;pk=k}}
+  $("t1-l").textContent=T("hsIn")(when());$("t1").textContent=fmt(v);$("t1-s").textContent=est?`${T("range")} ${fmt(lo)}–${fmt(hi)}`:T("viirsEq");
+  const pct=normal>0?Math.round(v/normal*100)+"%":"–";
+  $("t2").textContent=pct;$("t2-s").innerHTML=`<span class="pill ${st}">${T("stShort")[st]}</span> ${T("median")}: ${fmt(normal)}`;
+  $("t3").textContent=T("mshort")[pk];$("t3-s").textContent=`${fmt(pv)} · ${S.year}`;
+  $("t4").textContent=est?T("src1"):T("src2");
+  $("t4-s").textContent=est?(S.zone==="PE"?T("fitAll"):(z.own?T("fitReg"):T("fitNat"))):(S.year>=2018?T("n20"):T("snpp"));
+  $("plain").innerHTML=T("plain")({when:when(),zone:dname(z),v:fmt(v),est,pct,month:S.month>=0,st:T("stWord")[st],peak:T("months")[pk]});
+}
+function drawSci(){
+  const list=S.zone==="PE"?DEP:[ZONES[S.zone]];const h=T("sciHead");
+  const rows=list.map(d=>`<tr><td>${dname(d)}</td><td>${d.own?T("own"):T("nat")}</td><td class="n">${dec(d.p.a,2)}</td><td class="n">${dec(d.p.d,2)}</td><td class="n">${dec(d.p.b,2)}</td><td>${d.high.map((x,k)=>x?T("mshort")[k]:"").filter(Boolean).join(" ")||"–"}</td><td class="n">${d.nMonths}</td></tr>`).join("");
+  $("sci-body").innerHTML=`<div class="scroll"><table class="params"><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows}<tr><td><i>${T("nat")}</i></td><td></td><td class="n">${dec(NAT.a,2)}</td><td class="n">${dec(NAT.d,2)}</td><td class="n">${dec(NAT.b,2)}</td><td></td><td class="n">${NAT.n}</td></tr></tbody></table></div>`;
+}
+function syncControls(){$("sel-dep").value=S.zone;$("sel-year").value=S.year;$("sel-month").value=S.month;$("d-title").textContent=dname(ZONES[S.zone])}
+function setZone(id){S.zone=id;syncControls();renderEx()}
+function renderEx(){drawTiles();drawMap();drawCal();drawSci();$("csv-box").hidden=true}
+function fillSelects(){
+  const sd=$("sel-dep");sd.innerHTML="";sd.add(new Option(T("allPeru"),"PE"));DEP.slice().sort((a,b)=>dname(a).localeCompare(dname(b),"es")).forEach(d=>sd.add(new Option(dname(d),d.id)));
+  const sy=$("sel-year");sy.innerHTML="";for(let y=Y1();y>=Y0;y--)sy.add(new Option(y+(y<2012?" ("+T("est")+")":""),y));
+  const sm=$("sel-month");sm.innerHTML="";sm.add(new Option(T("wholeYear"),-1));T("months").forEach((m,k)=>sm.add(new Option(m[0].toUpperCase()+m.slice(1),k)));
+  syncControls();
+}
+$("sel-dep").addEventListener("change",e=>setZone(e.target.value));
+$("sel-year").addEventListener("change",e=>{S.year=+e.target.value;renderEx()});
+$("sel-month").addEventListener("change",e=>{S.month=+e.target.value;renderEx()});
+const seg=(a,b,key,va,vb,fn)=>{$(a).onclick=()=>{S[key]=va;$(a).setAttribute("aria-pressed",true);$(b).setAttribute("aria-pressed",false);fn()};$(b).onclick=()=>{S[key]=vb;$(b).setAttribute("aria-pressed",true);$(a).setAttribute("aria-pressed",false);fn()}};
+seg("mm-dep","mm-heat","mapMode","dep","heat",drawMap);seg("cm-n","cm-a","calMode","n","a",drawCal);
+$("btn-csv").onclick=()=>{const z=ZONES[S.zone];let csv="region_id,month,hotspots_harmonized,range_p10,range_p90,source\n";
+  for(let t=0;t<N;t++){csv+=`${z.id},${Y0+Math.floor(t/12)}-${String(t%12+1).padStart(2,"0")},${z.H[t].toFixed(1)},${z.LO[t].toFixed(1)},${z.HI[t].toFixed(1)},${t<VI?"MODIS_ADJ":"VIIRS"}\n`}
+  const box=$("csv-box"),btn=$("btn-csv");box.value=csv;box.hidden=false;
+  const done=ok=>{btn.textContent=ok?T("csvCopied"):T("csvSelect");setTimeout(()=>btn.textContent=T("csvBtn"),2200)};
+  try{navigator.clipboard.writeText(csv).then(()=>done(true),()=>{box.select();done(false)})}catch(e){box.select();done(false)}};
+
+// ---------- language + routes ----------
+function applyLang(){
+  document.documentElement.lang=LANG;document.title=T("brand");
+  document.querySelectorAll("[data-t]").forEach(n=>{const v=T(n.dataset.t);if(typeof v==="string")n.textContent=v});
+  document.querySelectorAll("[data-th]").forEach(n=>{n.innerHTML=T(n.dataset.th)});
+  $("lang-en").setAttribute("aria-pressed",LANG==="en");$("lang-es").setAttribute("aria-pressed",LANG==="es");
+  $("ratio").textContent="×"+dec(RATIO,1);$("n-reg").textContent=DEP.length;
+  heroClock();drawPixels();drawRegions();drawMorph();fillSelects();
+  if(!$("view-explore").hidden)renderEx();
+}
+function setLang(l){LANG=l;try{localStorage.setItem("lang",l)}catch(e){}applyLang()}
+$("lang-en").onclick=()=>setLang("en");$("lang-es").onclick=()=>setLang("es");
+function route(){
+  const h=location.hash.slice(1);const ex=h==="explore";
+  $("view-story").hidden=ex;$("view-explore").hidden=!ex;
+  document.querySelectorAll(".nav a").forEach(a=>{const r=a.getAttribute("href").slice(1);const on=ex?r==="explore":(r==="home"&&h!=="method")||(r==="method"&&h==="method");if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  if(ex){renderEx();scrollTo(0,0)}else if(h==="method")$("method").scrollIntoView();else scrollTo(0,0);
+}
+addEventListener("hashchange",route);
+S.year=HY;applyLang();route();
+})();
+</script>

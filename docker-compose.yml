@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: fire
+      POSTGRES_PASSWORD: fire
+      POSTGRES_DB: fire
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://fire:fire@db:5432/fire
+    ports: ["8000:8000"]
+    depends_on: [db]
+volumes:
+  pgdata:
